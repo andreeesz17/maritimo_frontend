@@ -25,6 +25,9 @@ import androidx.compose.ui.unit.sp
 import com.maritimo.control.ui.theme.*
 import com.maritimo.control.ui.viewmodel.AuthViewModel
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+
 @Composable
 fun ProfileScreen(
     authViewModel: AuthViewModel,
@@ -52,12 +55,12 @@ fun ProfileScreen(
         )
     )
 
+    val scrollState = rememberScrollState()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundGradient)
-            .padding(20.dp),
-        contentAlignment = Alignment.Center
     ) {
         // Resplandor de fondo futurista radial
         Box(
@@ -71,9 +74,18 @@ fun ProfileScreen(
                         )
                     )
                 )
+                .align(Alignment.Center)
         )
 
-        Card(
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .widthIn(max = 450.dp)
@@ -310,4 +322,5 @@ fun ProfileScreen(
             }
         }
     }
+}
 }

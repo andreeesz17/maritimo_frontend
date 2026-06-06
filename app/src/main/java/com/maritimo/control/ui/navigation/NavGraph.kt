@@ -228,7 +228,8 @@ private fun NavGraphContent(
                 CatalogScreen(
                     onCourseClick = { id -> navController.navigate("course/$id") },
                     onOpenCart = { showCart = true },
-                    cartViewModel = cartViewModel
+                    cartViewModel = cartViewModel,
+                    onBack = { navController.popBackStack() }
                 )
             }
 
