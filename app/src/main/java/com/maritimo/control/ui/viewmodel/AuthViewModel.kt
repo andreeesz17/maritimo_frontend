@@ -13,9 +13,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 // Conjunto de roles que van al panel de administrador
-private val ADMIN_ROLES    = setOf("admin", "superuser", "superusuario", "administrador", "staff")
-// Conjunto de roles que van al panel de profesor
-private val TEACHER_ROLES  = setOf("teacher", "profesor", "docente", "instructor")
+private val ADMIN_ROLES    = setOf("admin")
+// Conjunto de roles que van al panel de profesor (ya no se usan)
+private val TEACHER_ROLES  = emptySet<String>()
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(

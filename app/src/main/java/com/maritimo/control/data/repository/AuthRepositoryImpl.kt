@@ -43,10 +43,10 @@ class AuthRepositoryImpl @Inject constructor(
                 ?.trim()
                 ?: "student"
 
-            val role = if (isStaff || isSuperuser || roleFromJwt in listOf("admin", "superuser", "superusuario", "administrador", "staff")) {
+            val role = if (isStaff || isSuperuser) {
                 "admin"
             } else {
-                roleFromJwt
+                "operator"
             }
 
             Log.d("ROLE_DEBUG", "Login → role=$role  is_staff=$isStaff  is_superuser=$isSuperuser")
@@ -98,18 +98,10 @@ class AuthRepositoryImpl @Inject constructor(
         val isStaff    = claims?.optBoolean("is_staff", false) ?: false
         val isSuperuser = claims?.optBoolean("is_superuser", false) ?: false
 
-        val roleFromJwt = claims
-            ?.takeIf { it.has("role") && !it.isNull("role") }
-            ?.optString("role", "student")
-            ?.lowercase()
-            ?.trim()
-            ?: registeredUser?.role?.lowercase()?.trim()
-            ?: "student"
-
-        val role = if (isStaff || isSuperuser || roleFromJwt in listOf("admin", "superuser", "superusuario", "administrador", "staff")) {
+        val role = if (isStaff || isSuperuser) {
             "admin"
         } else {
-            roleFromJwt
+            "operator"
         }
 
         Log.d("ROLE_DEBUG", "Register → role=$role  is_staff=$isStaff  is_superuser=$isSuperuser")
