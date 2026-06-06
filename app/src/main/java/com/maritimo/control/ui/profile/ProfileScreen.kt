@@ -40,9 +40,9 @@ fun ProfileScreen(
 
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
-            Color(0xFF0A1E36),
-            Color(0xFF134074),
-            Color(0xFF225791)
+            AzulAbisal,
+            Color(0xFF0F1B35),
+            Color(0xFF132A50)
         )
     )
 
@@ -58,57 +58,64 @@ fun ProfileScreen(
                 .fillMaxWidth()
                 .widthIn(max = 450.dp)
                 .clip(RoundedCornerShape(28.dp))
-                .border(BorderStroke(1.5.dp, Color.White.copy(alpha = 0.2f)), RoundedCornerShape(28.dp)),
-            colors = CardDefaults.cardColors(containerColor = BlancoHielo.copy(alpha = 0.96f)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 16.dp)
+                .border(
+                    BorderStroke(1.5.dp, Color.White.copy(alpha = 0.12f)),
+                    RoundedCornerShape(28.dp)
+                ),
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFF0C162A).copy(alpha = 0.75f)
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                // Avatar con borde gradiente brillante
+                // Avatar con borde gradiente brillante y efecto de pulido
                 Box(
                     modifier = Modifier
-                        .size(96.dp)
+                        .size(100.dp)
                         .clip(CircleShape)
                         .background(Brush.linearGradient(listOf(CianElectrico, AzulAcero)))
                         .padding(3.dp)
                         .clip(CircleShape)
-                        .background(AzulAbisal),
+                        .background(Color(0xFF070D19)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = (user?.username?.firstOrNull()?.toString() ?: "O").uppercase(),
                         color = Color.White,
-                        fontSize = 38.sp,
+                        fontSize = 40.sp,
                         fontWeight = FontWeight.Black
                     )
                 }
 
+                // Información del Usuario
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = user?.username ?: "Operador",
-                        fontSize = 22.sp,
+                        fontSize = 24.sp,
                         fontWeight = FontWeight.Black,
-                        color = TextPrimary
+                        color = Color.White
                     )
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = user?.email ?: "correo@puerto.com",
                         fontSize = 14.sp,
-                        color = TextSecondary,
+                        color = Color.White.copy(alpha = 0.6f),
                         fontWeight = FontWeight.Medium
                     )
                 }
 
+                // Badge de Rol con diseño tecnológico
                 val statusColor = if (isAdmin) VerdeEsmeralda else AzulAcero
                 Surface(
-                    color = statusColor.copy(alpha = 0.12f),
+                    color = statusColor.copy(alpha = 0.15f),
                     shape = RoundedCornerShape(10.dp),
-                    border = BorderStroke(1.dp, statusColor.copy(alpha = 0.3f))
+                    border = BorderStroke(1.dp, statusColor.copy(alpha = 0.4f))
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
@@ -117,7 +124,7 @@ fun ProfileScreen(
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(6.dp)
+                                .size(7.dp)
                                 .clip(CircleShape)
                                 .background(statusColor)
                         )
@@ -130,50 +137,125 @@ fun ProfileScreen(
                     }
                 }
 
-                HorizontalDivider(color = Border, thickness = 1.dp)
+                HorizontalDivider(color = Color.White.copy(alpha = 0.08f), thickness = 1.dp)
 
-                // Menu items
-                OutlinedButton(
-                    onClick = onNavigateToCapitanes,
+                // Mini-Stats Section (Métricas)
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(52.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(1.5.dp, AzulAcero),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = AzulAcero)
+                        .background(Color.White.copy(alpha = 0.03f), RoundedCornerShape(16.dp))
+                        .border(BorderStroke(1.dp, Color.White.copy(alpha = 0.05f)), RoundedCornerShape(16.dp))
+                        .padding(vertical = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.SupervisorAccount,
-                        contentDescription = null,
-                        tint = AzulAcero,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Gestión de Capitanes",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    // Stat 1: Atraques Activos
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Default.Anchor,
+                            contentDescription = null,
+                            tint = CianElectrico,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(text = "12", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(text = "Atraques", color = Color.White.copy(alpha = 0.5f), fontSize = 11.sp)
+                    }
+
+                    // Divisor
+                    Box(modifier = Modifier.width(1.dp).height(30.dp).background(Color.White.copy(alpha = 0.08f)))
+
+                    // Stat 2: Inspecciones de Seguridad
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Default.Security,
+                            contentDescription = null,
+                            tint = VerdeEsmeralda,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(text = "45", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(text = "Inspecciones", color = Color.White.copy(alpha = 0.5f), fontSize = 11.sp)
+                    }
+
+                    // Divisor
+                    Box(modifier = Modifier.width(1.dp).height(30.dp).background(Color.White.copy(alpha = 0.08f)))
+
+                    // Stat 3: Puertos Activos
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Default.DirectionsBoat,
+                            contentDescription = null,
+                            tint = AmbarAlerta,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(text = "8", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(text = "Buques", color = Color.White.copy(alpha = 0.5f), fontSize = 11.sp)
+                    }
                 }
 
+                HorizontalDivider(color = Color.White.copy(alpha = 0.08f), thickness = 1.dp)
+
+                // Menu items / Action buttons
                 Button(
-                    onClick = onLogout,
-                    colors = ButtonDefaults.buttonColors(containerColor = RojoCoral),
+                    onClick = onNavigateToCapitanes,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                    contentPadding = PaddingValues(),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(52.dp),
+                        .heightIn(min = 52.dp),
                     shape = RoundedCornerShape(16.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Brush.linearGradient(listOf(AzulAcero, CianElectrico)))
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.SupervisorAccount,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Gestión de Capitanes",
+                                color = Color.White,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+
+                OutlinedButton(
+                    onClick = onLogout,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 52.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.5.dp, RojoCoral.copy(alpha = 0.8f)),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = RojoCoral.copy(alpha = 0.08f),
+                        contentColor = RojoCoral
+                    )
                 ) {
                     Icon(
                         imageVector = Icons.Default.Logout,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = RojoCoral,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "Cerrar Sesión",
-                        color = Color.White,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
                     )
