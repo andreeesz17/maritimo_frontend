@@ -38,6 +38,10 @@ fun ProfileScreen(
     val user by authViewModel.currentUser.collectAsState()
     val isAdmin by authViewModel.isAdminRole.collectAsState()
 
+    val buquesCount by gamificationViewModel.buquesCount.collectAsState()
+    val atraquesCount by gamificationViewModel.atraquesCount.collectAsState()
+    val inspeccionesCount by gamificationViewModel.inspeccionesCount.collectAsState()
+
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
             AzulAbisal,
@@ -158,7 +162,7 @@ fun ProfileScreen(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(text = "12", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(text = atraquesCount.toString(), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                         Text(text = "Atraques", color = Color.White.copy(alpha = 0.5f), fontSize = 11.sp)
                     }
 
@@ -174,7 +178,7 @@ fun ProfileScreen(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(text = "45", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(text = inspeccionesCount.toString(), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                         Text(text = "Inspecciones", color = Color.White.copy(alpha = 0.5f), fontSize = 11.sp)
                     }
 
@@ -190,7 +194,7 @@ fun ProfileScreen(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(text = "8", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Text(text = buquesCount.toString(), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                         Text(text = "Buques", color = Color.White.copy(alpha = 0.5f), fontSize = 11.sp)
                     }
                 }
