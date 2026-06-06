@@ -3,6 +3,7 @@ package com.maritimo.control.ui.profile
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,11 +18,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.maritimo.control.ui.theme.*
 import com.maritimo.control.ui.viewmodel.AuthViewModel
+
+data class ProfileActionItem(
+    val icon: ImageVector,
+    val description: String,
+    val onClick: () -> Unit,
+    val tint: Color
+)
 
 @Composable
 fun ProfileScreen(
@@ -45,8 +54,8 @@ fun ProfileScreen(
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
             AzulAbisal,
-            Color(0xFF0F1B35),
-            Color(0xFF132A50)
+            Color(0xFF09142E),
+            Color(0xFF060B13)
         )
     )
 
@@ -54,47 +63,79 @@ fun ProfileScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundGradient)
-            .padding(24.dp),
+            .padding(20.dp),
         contentAlignment = Alignment.Center
     ) {
+        // Resplandor de fondo futurista radial
+        Box(
+            modifier = Modifier
+                .size(400.dp)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            CianElectrico.copy(alpha = 0.08f),
+                            Color.Transparent
+                        )
+                    )
+                )
+        )
+
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .widthIn(max = 450.dp)
-                .clip(RoundedCornerShape(28.dp))
+                .clip(RoundedCornerShape(32.dp))
                 .border(
-                    BorderStroke(1.5.dp, Color.White.copy(alpha = 0.12f)),
-                    RoundedCornerShape(28.dp)
+                    BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
+                    RoundedCornerShape(32.dp)
                 ),
             colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF0C162A).copy(alpha = 0.75f)
+                containerColor = Color(0xFF070D19).copy(alpha = 0.85f)
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(28.dp),
+                    .padding(horizontal = 24.dp, vertical = 28.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                // Avatar con borde gradiente brillante y efecto de pulido
+                // Avatar con diseño de radar holográfico
                 Box(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .background(Brush.linearGradient(listOf(CianElectrico, AzulAcero)))
-                        .padding(3.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFF070D19)),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.padding(vertical = 4.dp)
                 ) {
-                    Text(
-                        text = (user?.username?.firstOrNull()?.toString() ?: "O").uppercase(),
-                        color = Color.White,
-                        fontSize = 40.sp,
-                        fontWeight = FontWeight.Black
+                    // Anillo de radar exterior 1
+                    Box(
+                        modifier = Modifier
+                            .size(132.dp)
+                            .border(BorderStroke(1.dp, CianElectrico.copy(alpha = 0.15f)), CircleShape)
                     )
+                    // Anillo de radar exterior 2
+                    Box(
+                        modifier = Modifier
+                            .size(116.dp)
+                            .border(BorderStroke(1.5.dp, CianElectrico.copy(alpha = 0.35f)), CircleShape)
+                    )
+                    // Avatar Principal
+                    Box(
+                        modifier = Modifier
+                            .size(92.dp)
+                            .clip(CircleShape)
+                            .background(Brush.linearGradient(listOf(CianElectrico, AzulAcero)))
+                            .padding(3.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF040810)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = (user?.username?.firstOrNull()?.toString() ?: "O").uppercase(),
+                            color = Color.White,
+                            fontSize = 38.sp,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
                 }
 
                 // Información del Usuario
@@ -109,7 +150,7 @@ fun ProfileScreen(
                     Text(
                         text = user?.email ?: "correo@puerto.com",
                         fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.6f),
+                        color = Color.White.copy(alpha = 0.5f),
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -117,9 +158,9 @@ fun ProfileScreen(
                 // Badge de Rol con diseño tecnológico
                 val statusColor = if (isAdmin) VerdeEsmeralda else AzulAcero
                 Surface(
-                    color = statusColor.copy(alpha = 0.15f),
+                    color = statusColor.copy(alpha = 0.12f),
                     shape = RoundedCornerShape(10.dp),
-                    border = BorderStroke(1.dp, statusColor.copy(alpha = 0.4f))
+                    border = BorderStroke(1.dp, statusColor.copy(alpha = 0.35f))
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
@@ -128,14 +169,14 @@ fun ProfileScreen(
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(7.dp)
+                                .size(6.dp)
                                 .clip(CircleShape)
                                 .background(statusColor)
                         )
                         Text(
                             text = if (isAdmin) "Administrador / Staff" else "Operador de Consulta",
                             color = statusColor,
-                            fontSize = 12.sp,
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -143,65 +184,123 @@ fun ProfileScreen(
 
                 HorizontalDivider(color = Color.White.copy(alpha = 0.08f), thickness = 1.dp)
 
-                // Mini-Stats Section (Métricas)
+                // Tarjetas de Métricas Individuales flotantes con brillo
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.White.copy(alpha = 0.03f), RoundedCornerShape(16.dp))
-                        .border(BorderStroke(1.dp, Color.White.copy(alpha = 0.05f)), RoundedCornerShape(16.dp))
-                        .padding(vertical = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Stat 1: Atraques Activos
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            imageVector = Icons.Default.Anchor,
-                            contentDescription = null,
-                            tint = CianElectrico,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(text = atraquesCount.toString(), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        Text(text = "Atraques", color = Color.White.copy(alpha = 0.5f), fontSize = 11.sp)
-                    }
+                    val statItems = listOf(
+                        Triple("Atraques", atraquesCount.toString(), CianElectrico to Icons.Default.Anchor),
+                        Triple("Inspecciones", inspeccionesCount.toString(), VerdeEsmeralda to Icons.Default.Security),
+                        Triple("Buques", buquesCount.toString(), AmbarAlerta to Icons.Default.DirectionsBoat)
+                    )
 
-                    // Divisor
-                    Box(modifier = Modifier.width(1.dp).height(30.dp).background(Color.White.copy(alpha = 0.08f)))
-
-                    // Stat 2: Inspecciones de Seguridad
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            imageVector = Icons.Default.Security,
-                            contentDescription = null,
-                            tint = VerdeEsmeralda,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(text = inspeccionesCount.toString(), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        Text(text = "Inspecciones", color = Color.White.copy(alpha = 0.5f), fontSize = 11.sp)
-                    }
-
-                    // Divisor
-                    Box(modifier = Modifier.width(1.dp).height(30.dp).background(Color.White.copy(alpha = 0.08f)))
-
-                    // Stat 3: Puertos Activos
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            imageVector = Icons.Default.DirectionsBoat,
-                            contentDescription = null,
-                            tint = AmbarAlerta,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(text = buquesCount.toString(), color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        Text(text = "Buques", color = Color.White.copy(alpha = 0.5f), fontSize = 11.sp)
+                    statItems.forEach { (label, value, pair) ->
+                        val (color, icon) = pair
+                        Card(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(20.dp))
+                                .border(
+                                    BorderStroke(1.dp, Color.White.copy(alpha = 0.06f)),
+                                    RoundedCornerShape(20.dp)
+                                ),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFF1B2A4A).copy(alpha = 0.2f)
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 12.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(34.dp)
+                                        .clip(CircleShape)
+                                        .background(color.copy(alpha = 0.1f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = icon,
+                                        contentDescription = null,
+                                        tint = color,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = value,
+                                    color = Color.White,
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Black
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = label,
+                                    color = Color.White.copy(alpha = 0.4f),
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
                     }
                 }
 
                 HorizontalDivider(color = Color.White.copy(alpha = 0.08f), thickness = 1.dp)
 
-                // Menu items / Action buttons
+                // Fila de acciones rápidas secundarias
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val actions = listOf(
+                        ProfileActionItem(Icons.Default.VerifiedUser, "Certificados", onNavigateToCertificates, CianElectrico),
+                        ProfileActionItem(Icons.Default.EmojiEvents, "Logros", onNavigateToAchievements, AmbarAlerta),
+                        ProfileActionItem(Icons.Default.Leaderboard, "Clasificación", onNavigateToLeaderboard, VerdeEsmeralda),
+                        ProfileActionItem(Icons.Default.Settings, "Ajustes", onNavigateToSettings, Color.White.copy(alpha = 0.6f))
+                    )
+
+                    actions.forEach { action ->
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { action.onClick() }
+                                .padding(4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF1B2A4A).copy(alpha = 0.25f))
+                                    .border(BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = action.icon,
+                                    contentDescription = action.description,
+                                    tint = action.tint,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = action.description,
+                                color = Color.White.copy(alpha = 0.5f),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(2.dp))
+
+                // Botón principal
                 Button(
                     onClick = onNavigateToCapitanes,
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
@@ -247,7 +346,7 @@ fun ProfileScreen(
                     shape = RoundedCornerShape(16.dp),
                     border = BorderStroke(1.5.dp, RojoCoral.copy(alpha = 0.8f)),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = RojoCoral.copy(alpha = 0.08f),
+                        containerColor = RojoCoral.copy(alpha = 0.06f),
                         contentColor = RojoCoral
                     )
                 ) {
