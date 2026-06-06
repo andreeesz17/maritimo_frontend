@@ -1,12 +1,17 @@
 package com.maritimo.control.ui.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -19,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,8 +49,11 @@ fun CatalogScreen(
     var selectedCapitanForEdit by remember { mutableStateOf<CapitanDto?>(null) }
     var showDetailDialog by remember { mutableStateOf(false) }
     var selectedCapitanForDetail by remember { mutableStateOf<CapitanDto?>(null) }
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    var pendingDeleteId by remember { mutableStateOf<Int?>(null) }
 
     val snackbarHostState = remember { SnackbarHostState() }
+    val listState = rememberLazyListState()
 
     LaunchedEffect(state.error) {
         state.error?.let {
@@ -52,132 +61,341 @@ fun CatalogScreen(
         }
     }
 
-    Scaffold(
-        containerColor = AzulAbisal,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            TopAppBar(
-                title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.SupervisorAccount,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Control de Capitanes",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            fontSize = 18.sp
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { viewModel.loadCatalog() }) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = "Recargar",
-                            tint = Color.White
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = AzulAbisal
-                )
-            )
-        },
-        floatingActionButton = {
-            if (isAdmin) {
-                FloatingActionButton(
-                    onClick = {
-                        selectedCapitanForEdit = null
-                        showCreateEditDialog = true
-                    },
-                    containerColor = AzulAcero,
-                    contentColor = Color.White,
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Añadir Capitán")
-                }
-            }
-        }
-    ) { paddingValues ->
-        Column(
+    val backgroundGradient = Brush.verticalGradient(
+        colors = listOf(
+            AzulAbisal,
+            Color(0xFF09142E),
+            Color(0xFF060B13)
+        )
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundGradient)
+    ) {
+        // Resplandor radial de fondo
+        Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-        ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Search Bar (Estilo Premium Marítimo Profesional)
-            OutlinedTextField(
-                value = state.searchQuery,
-                onValueChange = { viewModel.updateSearchQuery(it) },
-                placeholder = { Text("Buscar capitán por nombre...", color = Color.White.copy(alpha = 0.5f)) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = CianElectrico) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                shape = RoundedCornerShape(14.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    focusedBorderColor = CianElectrico,
-                    focusedLabelColor = CianElectrico,
-                    cursorColor = CianElectrico,
-                    unfocusedBorderColor = CianElectrico.copy(alpha = 0.15f),
-                    focusedContainerColor = Color(0xFF1B2A4A).copy(alpha = 0.4f),
-                    unfocusedContainerColor = Color(0xFF1B2A4A).copy(alpha = 0.2f)
+                .fillMaxWidth()
+                .height(300.dp)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            CianElectrico.copy(alpha = 0.06f),
+                            Color.Transparent
+                        ),
+                        radius = 600f
+                    )
                 )
-            )
+        )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // list container
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                if (state.isLoading && state.capitanes.isEmpty()) {
-                    CircularProgressIndicator(color = CianElectrico)
-                } else if (state.capitanes.isEmpty()) {
-                    Text("No se encontraron capitanes registrados.", color = Color.White.copy(alpha = 0.7f))
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(bottom = 80.dp)
-                    ) {
-                        items(state.capitanes, key = { it.id }) { capitan ->
-                            CapitanCardItem(
-                                capitan = capitan,
-                                isAdmin = isAdmin,
-                                onClick = {
-                                    selectedCapitanForDetail = capitan
-                                    showDetailDialog = true
-                                },
-                                onEdit = {
-                                    selectedCapitanForEdit = capitan
-                                    showCreateEditDialog = true
-                                },
-                                onDelete = {
-                                    viewModel.deleteCapitan(capitan.id)
-                                }
+        Scaffold(
+            containerColor = Color.Transparent,
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            topBar = {
+                // Header inmersivo premium
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    AzulAbisal,
+                                    Color.Transparent
+                                )
                             )
+                        )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .statusBarsPadding()
+                            .padding(horizontal = 20.dp, vertical = 16.dp)
+                    ) {
+                        // Título con icono
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .background(
+                                        Brush.linearGradient(
+                                            listOf(AzulAcero, CianElectrico)
+                                        )
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.SupervisorAccount,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = "Control de Capitanes",
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color.White
+                                )
+                                Text(
+                                    text = "${state.capitanes.size} registros activos",
+                                    fontSize = 12.sp,
+                                    color = CianElectrico.copy(alpha = 0.8f),
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                            Spacer(modifier = Modifier.weight(1f))
+                            // Botón refresh
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.White.copy(alpha = 0.06f))
+                                    .clickable { viewModel.loadCatalog() },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Refresh,
+                                    contentDescription = "Recargar",
+                                    tint = Color.White.copy(alpha = 0.7f),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
 
-                        if (state.hasMore) {
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Barra de búsqueda premium
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(Color(0xFF1B2A4A).copy(alpha = 0.4f))
+                                .border(1.dp, CianElectrico.copy(alpha = 0.18f), RoundedCornerShape(16.dp))
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = null,
+                                tint = CianElectrico,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            BasicTextField(
+                                value = state.searchQuery,
+                                onValueChange = { viewModel.updateSearchQuery(it) },
+                                singleLine = true,
+                                textStyle = androidx.compose.ui.text.TextStyle(
+                                    color = Color.White,
+                                    fontSize = 15.sp
+                                ),
+                                modifier = Modifier.weight(1f),
+                                decorationBox = { innerTextField ->
+                                    if (state.searchQuery.isEmpty()) {
+                                        Text(
+                                            "Buscar capitán por nombre...",
+                                            color = Color.White.copy(alpha = 0.35f),
+                                            fontSize = 15.sp
+                                        )
+                                    }
+                                    innerTextField()
+                                }
+                            )
+                            if (state.searchQuery.isNotEmpty()) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Limpiar",
+                                    tint = Color.White.copy(alpha = 0.4f),
+                                    modifier = Modifier
+                                        .size(18.dp)
+                                        .clickable { viewModel.updateSearchQuery("") }
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            floatingActionButton = {
+                if (isAdmin) {
+                    Box(
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(
+                                Brush.linearGradient(listOf(AzulAcero, CianElectrico))
+                            )
+                            .clickable {
+                                selectedCapitanForEdit = null
+                                showCreateEditDialog = true
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PersonAdd,
+                            contentDescription = "Añadir Capitán",
+                            tint = Color.White,
+                            modifier = Modifier.size(26.dp)
+                        )
+                    }
+                }
+            }
+        ) { paddingValues ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                when {
+                    state.isLoading && state.capitanes.isEmpty() -> {
+                        // Loader premium
+                        Column(
+                            modifier = Modifier.align(Alignment.Center),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                color = CianElectrico,
+                                strokeWidth = 3.dp,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Text(
+                                text = "Cargando registros...",
+                                color = Color.White.copy(alpha = 0.5f),
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                    state.capitanes.isEmpty() -> {
+                        // Estado vacío premium
+                        Column(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(80.dp)
+                                    .clip(CircleShape)
+                                    .background(CianElectrico.copy(alpha = 0.08f))
+                                    .border(1.dp, CianElectrico.copy(alpha = 0.2f), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.SupervisorAccount,
+                                    contentDescription = null,
+                                    tint = CianElectrico.copy(alpha = 0.5f),
+                                    modifier = Modifier.size(36.dp)
+                                )
+                            }
+                            Text(
+                                text = "Sin capitanes registrados",
+                                fontSize = 17.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White.copy(alpha = 0.8f),
+                                textAlign = TextAlign.Center
+                            )
+                            Text(
+                                text = "Agrega el primer capitán usando el botón +",
+                                fontSize = 13.sp,
+                                color = Color.White.copy(alpha = 0.4f),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                    else -> {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            contentPadding = PaddingValues(top = 12.dp, bottom = 100.dp)
+                        ) {
+                            // Contador de resultados
                             item {
-                                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                    Button(
-                                        onClick = { viewModel.loadMoreCapitanes() },
-                                        colors = ButtonDefaults.buttonColors(containerColor = AzulAcero)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = if (state.searchQuery.isNotEmpty())
+                                            "Resultados para \"${state.searchQuery}\""
+                                        else "Todos los capitanes",
+                                        fontSize = 12.sp,
+                                        color = Color.White.copy(alpha = 0.4f),
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    Surface(
+                                        color = CianElectrico.copy(alpha = 0.12f),
+                                        shape = RoundedCornerShape(8.dp),
+                                        border = BorderStroke(1.dp, CianElectrico.copy(alpha = 0.25f))
                                     ) {
-                                        Text("Cargar más")
+                                        Text(
+                                            text = "${state.capitanes.size}",
+                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Black,
+                                            color = CianElectrico
+                                        )
+                                    }
+                                }
+                            }
+
+                            items(state.capitanes, key = { it.id }) { capitan ->
+                                CapitanCardItem(
+                                    capitan = capitan,
+                                    isAdmin = isAdmin,
+                                    onClick = {
+                                        selectedCapitanForDetail = capitan
+                                        showDetailDialog = true
+                                    },
+                                    onEdit = {
+                                        selectedCapitanForEdit = capitan
+                                        showCreateEditDialog = true
+                                    },
+                                    onDelete = {
+                                        pendingDeleteId = capitan.id
+                                        showDeleteConfirmDialog = true
+                                    }
+                                )
+                            }
+
+                            if (state.hasMore) {
+                                item {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Button(
+                                            onClick = { viewModel.loadMoreCapitanes() },
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = Color.Transparent
+                                            ),
+                                            contentPadding = PaddingValues(),
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(
+                                                    Brush.linearGradient(listOf(AzulAcero, CianElectrico))
+                                                )
+                                        ) {
+                                            Text(
+                                                "Cargar más",
+                                                modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -186,6 +404,46 @@ fun CatalogScreen(
                 }
             }
         }
+    }
+
+    // Dialogo confirmar eliminación
+    if (showDeleteConfirmDialog && pendingDeleteId != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmDialog = false },
+            title = {
+                Text(
+                    "Eliminar Capitán",
+                    fontWeight = FontWeight.Black,
+                    color = Color.White,
+                    fontSize = 18.sp
+                )
+            },
+            text = {
+                Text(
+                    "¿Estás seguro de que quieres eliminar este capitán? Esta acción no se puede deshacer.",
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontSize = 14.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        pendingDeleteId?.let { viewModel.deleteCapitan(it) }
+                        showDeleteConfirmDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = RojoCoral)
+                ) {
+                    Text("Eliminar", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmDialog = false }) {
+                    Text("Cancelar", color = Color.White.copy(alpha = 0.6f))
+                }
+            },
+            containerColor = Color(0xFF0C162A),
+            shape = RoundedCornerShape(24.dp)
+        )
     }
 
     // Dialogo crear/editar
@@ -219,6 +477,17 @@ fun CatalogScreen(
     }
 }
 
+// Función auxiliar para generar colores de avatar según inicial
+private fun getAvatarColorForLetter(letter: Char): Brush {
+    return when (letter.lowercaseChar()) {
+        in 'a'..'e' -> Brush.linearGradient(listOf(Color(0xFF007EA7), Color(0xFF00A8E8)))
+        in 'f'..'j' -> Brush.linearGradient(listOf(Color(0xFF2EC4B6), Color(0xFF00A8E8)))
+        in 'k'..'o' -> Brush.linearGradient(listOf(Color(0xFF0A1128), Color(0xFF007EA7)))
+        in 'p'..'t' -> Brush.linearGradient(listOf(Color(0xFFFF9F1C), Color(0xFFE71D36)))
+        else        -> Brush.linearGradient(listOf(Color(0xFF007EA7), Color(0xFF2EC4B6)))
+    }
+}
+
 @Composable
 fun CapitanCardItem(
     capitan: CapitanDto,
@@ -227,80 +496,153 @@ fun CapitanCardItem(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val initial = capitan.nombres.firstOrNull() ?: 'C'
+    val avatarGradient = getAvatarColorForLetter(initial)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(20.dp))
             .clickable { onClick() }
             .border(
-                BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
-                RoundedCornerShape(24.dp)
+                BorderStroke(1.dp, Color.White.copy(alpha = 0.07f)),
+                RoundedCornerShape(20.dp)
             ),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF0F1B30).copy(alpha = 0.6f)),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF0D1B30).copy(alpha = 0.7f)
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.weight(1f)
+            // Avatar con inicial y gradiente dinámico
+            Box(
+                modifier = Modifier
+                    .size(52.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(avatarGradient),
+                contentAlignment = Alignment.Center
             ) {
-                // Avatar circular premium con borde gradiente
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(CircleShape)
-                        .background(Brush.linearGradient(listOf(CianElectrico, AzulAcero)))
-                        .padding(2.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFF070D19)),
-                    contentAlignment = Alignment.Center
+                Text(
+                    text = initial.uppercaseChar().toString(),
+                    fontWeight = FontWeight.Black,
+                    color = Color.White,
+                    fontSize = 22.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.width(14.dp))
+
+            // Info del capitán
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "${capitan.nombres} ${capitan.apellidos}",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Text(
-                        text = capitan.nombres.firstOrNull()?.toString() ?: "",
-                        fontWeight = FontWeight.Black,
-                        color = Color.White,
-                        fontSize = 18.sp
-                    )
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "${capitan.nombres} ${capitan.apellidos}",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "Licencia: ${capitan.licenciaNavegacion} | ${capitan.nacionalidad}",
-                        fontSize = 12.sp,
-                        color = Color.White.copy(alpha = 0.6f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    // Badge de licencia
+                    Surface(
+                        color = AzulAcero.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(6.dp),
+                        border = BorderStroke(1.dp, AzulAcero.copy(alpha = 0.3f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.VerifiedUser,
+                                contentDescription = null,
+                                tint = CianElectrico,
+                                modifier = Modifier.size(10.dp)
+                            )
+                            Text(
+                                text = capitan.licenciaNavegacion,
+                                fontSize = 10.sp,
+                                color = CianElectrico,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                    // Badge de nacionalidad
+                    Surface(
+                        color = VerdeEsmeralda.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(6.dp),
+                        border = BorderStroke(1.dp, VerdeEsmeralda.copy(alpha = 0.25f))
+                    ) {
+                        Text(
+                            text = capitan.nacionalidad,
+                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp),
+                            fontSize = 10.sp,
+                            color = VerdeEsmeralda,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
             }
 
+            // Acciones de admin
             if (isAdmin) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    IconButton(onClick = onEdit, modifier = Modifier.size(28.dp)) {
-                        Icon(Icons.Default.Edit, contentDescription = "Editar", tint = AzulAcero, modifier = Modifier.size(16.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(AzulAcero.copy(alpha = 0.12f))
+                            .clickable { onEdit() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Editar",
+                            tint = CianElectrico,
+                            modifier = Modifier.size(15.dp)
+                        )
                     }
-                    IconButton(onClick = onDelete, modifier = Modifier.size(28.dp)) {
-                        Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = RojoCoral, modifier = Modifier.size(16.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(RojoCoral.copy(alpha = 0.10f))
+                            .clickable { onDelete() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Eliminar",
+                            tint = RojoCoral,
+                            modifier = Modifier.size(15.dp)
+                        )
                     }
                 }
+            } else {
+                // Icono de flecha para ver detalles
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = Color.White.copy(alpha = 0.25f),
+                    modifier = Modifier.size(20.dp)
+                )
             }
         }
     }
@@ -321,60 +663,78 @@ fun CreateEditCapitanDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(
-                text = if (capitan == null) "Nuevo Capitán" else "Editar Capitán",
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                fontSize = 20.sp
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(
+                            Brush.linearGradient(listOf(AzulAcero, CianElectrico))
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = if (capitan == null) Icons.Default.PersonAdd else Icons.Default.Edit,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Text(
+                    text = if (capitan == null) "Nuevo Capitán" else "Editar Capitán",
+                    fontWeight = FontWeight.Black,
+                    color = Color.White,
+                    fontSize = 19.sp
+                )
+            }
         },
         text = {
             Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.padding(top = 8.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+                modifier = Modifier.padding(top = 6.dp)
             ) {
                 val textFieldColors = OutlinedTextFieldDefaults.colors(
                     focusedTextColor = Color.White,
                     unfocusedTextColor = Color.White,
                     focusedBorderColor = CianElectrico,
                     focusedLabelColor = CianElectrico,
+                    unfocusedLabelColor = Color.White.copy(alpha = 0.5f),
                     cursorColor = CianElectrico,
-                    unfocusedBorderColor = Color.White.copy(alpha = 0.15f),
-                    focusedContainerColor = Color(0xFF1B2A4A).copy(alpha = 0.2f),
-                    unfocusedContainerColor = Color(0xFF1B2A4A).copy(alpha = 0.1f)
+                    unfocusedBorderColor = Color.White.copy(alpha = 0.12f),
+                    focusedContainerColor = Color(0xFF1B2A4A).copy(alpha = 0.25f),
+                    unfocusedContainerColor = Color(0xFF1B2A4A).copy(alpha = 0.12f)
                 )
 
-                OutlinedTextField(
+                PremiumDialogField(
                     value = nombres,
                     onValueChange = { nombres = it },
-                    label = { Text("Nombres") },
-                    colors = textFieldColors,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    label = "Nombres",
+                    icon = Icons.Default.Person,
+                    colors = textFieldColors
                 )
-                OutlinedTextField(
+                PremiumDialogField(
                     value = apellidos,
                     onValueChange = { apellidos = it },
-                    label = { Text("Apellidos") },
-                    colors = textFieldColors,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    label = "Apellidos",
+                    icon = Icons.Default.Person,
+                    colors = textFieldColors
                 )
-                OutlinedTextField(
+                PremiumDialogField(
                     value = licencia,
                     onValueChange = { licencia = it },
-                    label = { Text("Licencia de Navegación") },
-                    colors = textFieldColors,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    label = "Licencia de Navegación",
+                    icon = Icons.Default.VerifiedUser,
+                    colors = textFieldColors
                 )
-                OutlinedTextField(
+                PremiumDialogField(
                     value = nacionalidad,
                     onValueChange = { nacionalidad = it },
-                    label = { Text("Nacionalidad") },
-                    colors = textFieldColors,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    label = "Nacionalidad",
+                    icon = Icons.Default.Flag,
+                    colors = textFieldColors
                 )
             }
         },
@@ -383,20 +743,61 @@ fun CreateEditCapitanDialog(
                 onClick = { onConfirm(nombres, apellidos, licencia, nacionalidad) },
                 enabled = nombres.isNotBlank() && apellidos.isNotBlank() && licencia.isNotBlank(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = AzulAcero,
-                    disabledContainerColor = AzulAcero.copy(alpha = 0.5f)
-                )
+                    containerColor = Color.Transparent,
+                    disabledContainerColor = Color(0xFF1B2A4A)
+                ),
+                contentPadding = PaddingValues(),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.clip(RoundedCornerShape(12.dp))
             ) {
-                Text("Guardar", color = Color.White, fontWeight = FontWeight.Bold)
+                Box(
+                    modifier = Modifier
+                        .background(
+                            if (nombres.isNotBlank() && apellidos.isNotBlank() && licencia.isNotBlank())
+                                Brush.linearGradient(listOf(AzulAcero, CianElectrico))
+                            else
+                                Brush.linearGradient(listOf(Color(0xFF1B2A4A), Color(0xFF1B2A4A)))
+                        )
+                        .padding(horizontal = 20.dp, vertical = 11.dp)
+                ) {
+                    Text("Guardar", color = Color.White, fontWeight = FontWeight.Bold)
+                }
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar", color = Color.White.copy(alpha = 0.6f))
+                Text("Cancelar", color = Color.White.copy(alpha = 0.5f))
             }
         },
-        containerColor = Color(0xFF0C162A),
-        shape = RoundedCornerShape(24.dp)
+        containerColor = Color(0xFF090F1E),
+        shape = RoundedCornerShape(28.dp)
+    )
+}
+
+@Composable
+fun PremiumDialogField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    colors: androidx.compose.material3.TextFieldColors
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        leadingIcon = {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = CianElectrico.copy(alpha = 0.7f),
+                modifier = Modifier.size(18.dp)
+            )
+        },
+        colors = colors,
+        shape = RoundedCornerShape(14.dp),
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true
     )
 }
 
@@ -405,66 +806,145 @@ fun CapitanDetailDialog(
     capitan: CapitanDto,
     onDismiss: () -> Unit
 ) {
+    val initial = capitan.nombres.firstOrNull() ?: 'C'
+    val avatarGradient = getAvatarColorForLetter(initial)
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(
-                    imageVector = Icons.Default.SupervisorAccount,
-                    contentDescription = null,
-                    tint = CianElectrico,
-                    modifier = Modifier.size(24.dp)
-                )
+                // Avatar grande
+                Box(
+                    modifier = Modifier
+                        .size(70.dp)
+                        .clip(RoundedCornerShape(22.dp))
+                        .background(avatarGradient)
+                        .border(2.dp, CianElectrico.copy(alpha = 0.3f), RoundedCornerShape(22.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = initial.uppercaseChar().toString(),
+                        fontWeight = FontWeight.Black,
+                        color = Color.White,
+                        fontSize = 30.sp
+                    )
+                }
+                Spacer(modifier = Modifier.height(10.dp))
                 Text(
                     text = "${capitan.nombres} ${capitan.apellidos}",
                     fontWeight = FontWeight.Black,
                     color = Color.White,
-                    fontSize = 20.sp
+                    fontSize = 19.sp,
+                    textAlign = TextAlign.Center
                 )
+                Spacer(modifier = Modifier.height(6.dp))
+                Surface(
+                    color = CianElectrico.copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, CianElectrico.copy(alpha = 0.3f))
+                ) {
+                    Text(
+                        text = "Capitán de Navegación",
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                        fontSize = 11.sp,
+                        color = CianElectrico,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         },
         text = {
             Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.padding(top = 8.dp)
             ) {
-                DetailFieldCapitan("ID de Capitán en Sistema", capitan.id.toString())
-                DetailFieldCapitan("Licencia Registrada", capitan.licenciaNavegacion)
-                DetailFieldCapitan("Nacionalidad", capitan.nacionalidad)
+                HorizontalDivider(color = Color.White.copy(alpha = 0.06f))
+                DetailFieldCapitan(
+                    label = "ID en Sistema",
+                    value = "#${capitan.id}",
+                    icon = Icons.Default.Tag
+                )
+                DetailFieldCapitan(
+                    label = "Licencia de Navegación",
+                    value = capitan.licenciaNavegacion,
+                    icon = Icons.Default.VerifiedUser
+                )
+                DetailFieldCapitan(
+                    label = "Nacionalidad",
+                    value = capitan.nacionalidad,
+                    icon = Icons.Default.Flag
+                )
             }
         },
         confirmButton = {
             Button(
                 onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(containerColor = AzulAcero)
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                contentPadding = PaddingValues(),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.clip(RoundedCornerShape(12.dp))
             ) {
-                Text("Cerrar", color = Color.White, fontWeight = FontWeight.Bold)
+                Box(
+                    modifier = Modifier
+                        .background(Brush.linearGradient(listOf(AzulAcero, CianElectrico)))
+                        .padding(horizontal = 24.dp, vertical = 11.dp)
+                ) {
+                    Text("Cerrar", color = Color.White, fontWeight = FontWeight.Bold)
+                }
             }
         },
-        containerColor = Color(0xFF0C162A),
-        shape = RoundedCornerShape(24.dp)
+        containerColor = Color(0xFF090F1E),
+        shape = RoundedCornerShape(28.dp)
     )
 }
 
 @Composable
-fun DetailFieldCapitan(label: String, value: String) {
-    Column {
-        Text(
-            text = label.uppercase(),
-            fontSize = 9.sp,
-            color = CianElectrico.copy(alpha = 0.8f),
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 0.5.sp
-        )
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(
-            text = value,
-            fontSize = 15.sp,
-            color = Color.White,
-            fontWeight = FontWeight.Medium
-        )
+fun DetailFieldCapitan(
+    label: String,
+    value: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(0xFF1B2A4A).copy(alpha = 0.2f))
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+                .background(CianElectrico.copy(alpha = 0.1f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = CianElectrico,
+                modifier = Modifier.size(15.dp)
+            )
+        }
+        Column {
+            Text(
+                text = label.uppercase(),
+                fontSize = 9.sp,
+                color = CianElectrico.copy(alpha = 0.7f),
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.8.sp
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = value,
+                fontSize = 14.sp,
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
     }
 }

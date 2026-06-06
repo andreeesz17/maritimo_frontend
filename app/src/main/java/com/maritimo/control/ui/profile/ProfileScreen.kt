@@ -25,13 +25,6 @@ import androidx.compose.ui.unit.sp
 import com.maritimo.control.ui.theme.*
 import com.maritimo.control.ui.viewmodel.AuthViewModel
 
-data class ProfileActionItem(
-    val icon: ImageVector,
-    val description: String,
-    val onClick: () -> Unit,
-    val tint: Color
-)
-
 @Composable
 fun ProfileScreen(
     authViewModel: AuthViewModel,
@@ -250,55 +243,6 @@ fun ProfileScreen(
                 }
 
                 HorizontalDivider(color = Color.White.copy(alpha = 0.08f), thickness = 1.dp)
-
-                // Fila de acciones rápidas secundarias
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val actions = listOf(
-                        ProfileActionItem(Icons.Default.VerifiedUser, "Certificados", onNavigateToCertificates, CianElectrico),
-                        ProfileActionItem(Icons.Default.EmojiEvents, "Logros", onNavigateToAchievements, AmbarAlerta),
-                        ProfileActionItem(Icons.Default.Leaderboard, "Clasificación", onNavigateToLeaderboard, VerdeEsmeralda),
-                        ProfileActionItem(Icons.Default.Settings, "Ajustes", onNavigateToSettings, Color.White.copy(alpha = 0.6f))
-                    )
-
-                    actions.forEach { action ->
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable { action.onClick() }
-                                .padding(4.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(CircleShape)
-                                    .background(Color(0xFF1B2A4A).copy(alpha = 0.25f))
-                                    .border(BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)), CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = action.icon,
-                                    contentDescription = action.description,
-                                    tint = action.tint,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = action.description,
-                                color = Color.White.copy(alpha = 0.5f),
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(2.dp))
 
                 // Botón principal
                 Button(
