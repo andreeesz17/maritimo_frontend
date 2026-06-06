@@ -1,5 +1,6 @@
 package com.maritimo.control.ui.games
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,12 +23,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.maritimo.control.data.remote.dto.AtraqueDto
 import com.maritimo.control.data.remote.dto.InspeccionDto
+import com.maritimo.control.data.remote.dto.BuqueDto
+import com.maritimo.control.data.remote.dto.MuelleDto
+import com.maritimo.control.data.remote.dto.CapitanDto
 import com.maritimo.control.ui.theme.*
 import com.maritimo.control.ui.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GameCenterScreen(
+fun InspectionsScreen(
     onNavigateToGame: (String) -> Unit,
     viewModel: EmergencySimulationViewModel = androidx.hilt.navigation.compose.hiltViewModel(),
     authViewModel: AuthViewModel = androidx.hilt.navigation.compose.hiltViewModel()
@@ -52,7 +56,7 @@ fun GameCenterScreen(
     }
 
     Scaffold(
-        containerColor = BackgroundColor,
+        containerColor = AzulAbisal,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
@@ -74,7 +78,7 @@ fun GameCenterScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PrimaryBlue
+                    containerColor = AzulAbisal
                 )
             )
         },
@@ -90,7 +94,7 @@ fun GameCenterScreen(
                             showAtraqueDialog = true
                         }
                     },
-                    containerColor = PrimaryBlue,
+                    containerColor = AzulAcero,
                     contentColor = Color.White
                 ) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Añadir")
@@ -103,22 +107,50 @@ fun GameCenterScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Tab Row
-            TabRow(
-                selectedTabIndex = selectedTab,
-                containerColor = SurfaceColor,
-                contentColor = PrimaryBlue
+            // Segmented Tab Selector
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xFF1B2A4A).copy(alpha = 0.4f))
+                    .border(BorderStroke(1.dp, GlassBorder), RoundedCornerShape(16.dp))
+                    .padding(4.dp)
             ) {
-                Tab(
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 },
-                    text = { Text("Inspecciones", fontWeight = FontWeight.Bold) }
-                )
-                Tab(
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
-                    text = { Text("Atraques", fontWeight = FontWeight.Bold) }
-                )
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (selectedTab == 0) CianElectrico else Color.Transparent)
+                            .clickable { selectedTab = 0 }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Inspecciones",
+                            color = if (selectedTab == 0) Color.White else Color.White.copy(alpha = 0.7f),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (selectedTab == 1) CianElectrico else Color.Transparent)
+                            .clickable { selectedTab = 1 }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Atraques",
+                            color = if (selectedTab == 1) Color.White else Color.White.copy(alpha = 0.7f),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
             }
 
             Column(
@@ -136,12 +168,22 @@ fun GameCenterScreen(
                         else viewModel.updateAtraqueSearch(it)
                     },
                     placeholder = {
-                        Text(if (selectedTab == 0) "Filtrar por resultado..." else "Filtrar por estado del atraque...")
+                        Text(if (selectedTab == 0) "Filtrar por resultado..." else "Filtrar por estado del atraque...", color = Color.White.copy(alpha = 0.5f))
                     },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = CianElectrico) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(14.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = CianElectrico,
+                        focusedLabelColor = CianElectrico,
+                        cursorColor = CianElectrico,
+                        unfocusedBorderColor = CianElectrico.copy(alpha = 0.15f),
+                        focusedContainerColor = Color(0xFF1B2A4A).copy(alpha = 0.4f),
+                        unfocusedContainerColor = Color(0xFF1B2A4A).copy(alpha = 0.2f)
+                    )
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -154,12 +196,12 @@ fun GameCenterScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     if (state.isLoading && state.inspecciones.isEmpty() && state.atraques.isEmpty()) {
-                        CircularProgressIndicator(color = PrimaryBlue)
+                        CircularProgressIndicator(color = CianElectrico)
                     } else {
                         if (selectedTab == 0) {
                             // Inspecciones Tab
                             if (state.inspecciones.isEmpty()) {
-                                Text("No hay inspecciones.", color = TextSecondary)
+                                Text("No hay inspecciones.", color = Color.White.copy(alpha = 0.7f))
                             } else {
                                 LazyColumn(
                                     modifier = Modifier.fillMaxSize(),
@@ -185,7 +227,7 @@ fun GameCenterScreen(
                                             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                                                 Button(
                                                     onClick = { viewModel.loadMoreInspecciones() },
-                                                    colors = ButtonDefaults.buttonColors(containerColor = AccentBlue)
+                                                    colors = ButtonDefaults.buttonColors(containerColor = AzulAcero)
                                                 ) {
                                                     Text("Cargar más")
                                                 }
@@ -197,7 +239,7 @@ fun GameCenterScreen(
                         } else {
                             // Atraques Tab
                             if (state.atraques.isEmpty()) {
-                                Text("No hay atraques.", color = TextSecondary)
+                                Text("No hay atraques.", color = Color.White.copy(alpha = 0.7f))
                             } else {
                                 LazyColumn(
                                     modifier = Modifier.fillMaxSize(),
@@ -223,7 +265,7 @@ fun GameCenterScreen(
                                             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                                                 Button(
                                                     onClick = { viewModel.loadMoreAtraques() },
-                                                    colors = ButtonDefaults.buttonColors(containerColor = AccentBlue)
+                                                    colors = ButtonDefaults.buttonColors(containerColor = AzulAcero)
                                                 ) {
                                                     Text("Cargar más")
                                                 }
@@ -243,7 +285,9 @@ fun GameCenterScreen(
     if (showInspeccionDialog) {
         InspeccionFormDialog(
             inspeccion = selectedInspeccionForEdit,
-            onDismiss = { showInspeccionDialog = false },
+            atraques = state.atraques,
+            errorMessage = state.error,
+            onDismiss = { showInspeccionDialog = false; viewModel.loadData() },
             onConfirm = { atraqueId, fecha, resultado, obs ->
                 if (selectedInspeccionForEdit == null) {
                     viewModel.createInspeccion(atraqueId, fecha, resultado, obs) { showInspeccionDialog = false }
@@ -258,7 +302,11 @@ fun GameCenterScreen(
     if (showAtraqueDialog) {
         AtraqueFormDialog(
             atraque = selectedAtraqueForEdit,
-            onDismiss = { showAtraqueDialog = false },
+            buques = state.buques,
+            muelles = state.muelles,
+            capitanes = state.capitanes,
+            errorMessage = state.error,
+            onDismiss = { showAtraqueDialog = false; viewModel.loadData() },
             onConfirm = { buqueId, muelleId, capitanId, fechaIng, fechaSal, estado ->
                 if (selectedAtraqueForEdit == null) {
                     viewModel.createAtraque(buqueId, muelleId, capitanId, fechaIng, fechaSal, estado) { showAtraqueDialog = false }
@@ -279,18 +327,18 @@ fun InspeccionCardItem(
 ) {
     val resultLower = inspeccion.resultado.lowercase()
     val (statusLabel, statusColor, statusIcon) = when {
-        resultLower.contains("aprobado") -> Triple("Aprobado", Success, Icons.Default.CheckCircle)
-        resultLower.contains("pendiente") -> Triple("Pendiente", Warning, Icons.Default.HourglassEmpty)
-        else -> Triple("Rechazado", ErrorColor, Icons.Default.Dangerous)
+        resultLower.contains("aprobado") -> Triple("Aprobado", VerdeEsmeralda, Icons.Default.CheckCircle)
+        resultLower.contains("pendiente") -> Triple("Pendiente", AmbarAlerta, Icons.Default.HourglassEmpty)
+        else -> Triple("Rechazado", RojoCoral, Icons.Default.Dangerous)
     }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, Border, RoundedCornerShape(12.dp)),
-        colors = CardDefaults.cardColors(containerColor = SurfaceColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .clip(RoundedCornerShape(24.dp)),
+        colors = CardDefaults.cardColors(containerColor = BlancoHielo),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        border = BorderStroke(1.dp, Border)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -302,7 +350,7 @@ fun InspeccionCardItem(
                     Icon(
                         imageVector = Icons.Default.Assignment,
                         contentDescription = null,
-                        tint = PrimaryBlue,
+                        tint = AzulAbisal,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -316,25 +364,26 @@ fun InspeccionCardItem(
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Surface(
-                        color = statusColor.copy(alpha = 0.15f),
-                        shape = RoundedCornerShape(6.dp)
+                        color = statusColor.copy(alpha = 0.12f),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, statusColor.copy(alpha = 0.3f))
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                         ) {
                             Icon(
-                                imageVector = statusIcon,
-                                contentDescription = null,
-                                tint = statusColor,
-                                modifier = Modifier.size(12.dp)
+                                  imageVector = statusIcon,
+                                  contentDescription = null,
+                                  tint = statusColor,
+                                  modifier = Modifier.size(12.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = statusLabel,
-                                color = statusColor,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
+                                  text = statusLabel,
+                                  color = statusColor,
+                                  fontSize = 11.sp,
+                                  fontWeight = FontWeight.Bold
                             )
                         }
                     }
@@ -342,10 +391,10 @@ fun InspeccionCardItem(
                     if (isAdmin) {
                         Spacer(modifier = Modifier.width(8.dp))
                         IconButton(onClick = onEdit, modifier = Modifier.size(28.dp)) {
-                            Icon(Icons.Default.Edit, contentDescription = "Editar", tint = AccentBlue, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Edit, contentDescription = "Editar", tint = AzulAcero, modifier = Modifier.size(16.dp))
                         }
                         IconButton(onClick = onDelete, modifier = Modifier.size(28.dp)) {
-                            Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = ErrorColor, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = RojoCoral, modifier = Modifier.size(16.dp))
                         }
                     }
                 }
@@ -369,9 +418,9 @@ fun InspeccionCardItem(
                     )
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "MUELLE / ATRAQUE", fontSize = 9.sp, color = TextTertiary, fontWeight = FontWeight.Bold)
+                    Text(text = "MUELLE / PUERTO / ATRAQUE", fontSize = 9.sp, color = TextTertiary, fontWeight = FontWeight.Bold)
                     Text(
-                        text = "Muelle ${inspeccion.atraque.muelle.codigo} (Atraque #${inspeccion.atraque.id})",
+                        text = "Muelle ${inspeccion.atraque.muelle.codigo} (${inspeccion.atraque.muelle.puerto.nombre}) - Atraque #${inspeccion.atraque.id}",
                         fontSize = 13.sp,
                         color = TextPrimary,
                         fontWeight = FontWeight.SemiBold
@@ -433,10 +482,10 @@ fun AtraqueCardItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, Border, RoundedCornerShape(12.dp)),
-        colors = CardDefaults.cardColors(containerColor = SurfaceColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .clip(RoundedCornerShape(24.dp)),
+        colors = CardDefaults.cardColors(containerColor = BlancoHielo),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        border = BorderStroke(1.dp, Border)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -448,30 +497,34 @@ fun AtraqueCardItem(
                     text = "Atraque #${atraque.id} - Muelle ${atraque.muelle.codigo}",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextPrimary
+                    color = TextPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
                 )
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Surface(
-                        color = AccentBlue.copy(alpha = 0.15f),
-                        shape = RoundedCornerShape(6.dp)
+                        color = AzulAcero.copy(alpha = 0.12f),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, AzulAcero.copy(alpha = 0.3f))
                     ) {
                         Text(
                             text = atraque.estado,
-                            color = AccentBlue,
+                            color = AzulAcero,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                         )
                     }
 
                     if (isAdmin) {
                         Spacer(modifier = Modifier.width(8.dp))
                         IconButton(onClick = onEdit, modifier = Modifier.size(28.dp)) {
-                            Icon(Icons.Default.Edit, contentDescription = "Editar", tint = AccentBlue, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Edit, contentDescription = "Editar", tint = AzulAcero, modifier = Modifier.size(16.dp))
                         }
                         IconButton(onClick = onDelete, modifier = Modifier.size(28.dp)) {
-                            Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = ErrorColor, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = RojoCoral, modifier = Modifier.size(16.dp))
                         }
                     }
                 }
@@ -507,6 +560,8 @@ fun AtraqueCardItem(
 @Composable
 fun InspeccionFormDialog(
     inspeccion: InspeccionDto?,
+    atraques: List<AtraqueDto>,
+    errorMessage: String? = null,
     onDismiss: () -> Unit,
     onConfirm: (Int, String, String, String) -> Unit
 ) {
@@ -515,14 +570,63 @@ fun InspeccionFormDialog(
     var resultado by remember { mutableStateOf(inspeccion?.resultado ?: "Aprobado") }
     var observaciones by remember { mutableStateOf(inspeccion?.observaciones ?: "") }
 
+    var dropdownExpanded by remember { mutableStateOf(false) }
+
+    // Helper translation
+    val selectedAtraque = atraques.firstOrNull { it.id == (atraqueIdText.toIntOrNull() ?: -1) }
+    val atraqueHelperText = if (selectedAtraque != null) {
+        "Buque: ${selectedAtraque.buque.nombre} en Muelle: ${selectedAtraque.muelle.codigo}"
+    } else {
+        "Ingrese un ID de atraque válido"
+    }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(text = if (inspeccion == null) "Nueva Inspección" else "Editar Inspección", fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(value = atraqueIdText, onValueChange = { atraqueIdText = it }, label = { Text("ID de Atraque") })
+                if (errorMessage != null) {
+                    Surface(
+                        color = RojoCoral.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(10.dp),
+                        border = BorderStroke(1.dp, RojoCoral.copy(alpha = 0.3f)),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                    ) {
+                        Text(
+                            text = errorMessage,
+                            color = RojoCoral,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(10.dp)
+                        )
+                    }
+                }
+
+                OutlinedTextField(
+                    value = atraqueIdText,
+                    onValueChange = { atraqueIdText = it },
+                    label = { Text("ID de Atraque") },
+                    supportingText = { Text(text = atraqueHelperText, color = if (selectedAtraque != null) VerdeEsmeralda else TextSecondary) }
+                )
+                
                 OutlinedTextField(value = fecha, onValueChange = { fecha = it }, label = { Text("Fecha y Hora") })
-                OutlinedTextField(value = resultado, onValueChange = { resultado = it }, label = { Text("Resultado (Aprobado/Pendiente/Rechazado)") })
+                
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedButton(onClick = { dropdownExpanded = true }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Resultado: $resultado")
+                    }
+                    DropdownMenu(expanded = dropdownExpanded, onDismissRequest = { dropdownExpanded = false }) {
+                        listOf("Aprobado", "Pendiente", "Rechazado").forEach { res ->
+                            DropdownMenuItem(
+                                text = { Text(res) },
+                                onClick = {
+                                    resultado = res
+                                    dropdownExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
                 OutlinedTextField(value = observaciones, onValueChange = { observaciones = it }, label = { Text("Observaciones") })
             }
         },
@@ -544,6 +648,10 @@ fun InspeccionFormDialog(
 @Composable
 fun AtraqueFormDialog(
     atraque: AtraqueDto?,
+    buques: List<BuqueDto>,
+    muelles: List<MuelleDto>,
+    capitanes: List<CapitanDto>,
+    errorMessage: String? = null,
     onDismiss: () -> Unit,
     onConfirm: (Int, Int, Int, String, String, String) -> Unit
 ) {
@@ -552,19 +660,82 @@ fun AtraqueFormDialog(
     var capitanIdText by remember { mutableStateOf(atraque?.capitan?.id?.toString() ?: "") }
     var fechaIng by remember { mutableStateOf(atraque?.fechaIngreso ?: "2026-06-05T08:00:00Z") }
     var fechaSal by remember { mutableStateOf(atraque?.fechaSalida ?: "2026-06-06T18:00:00Z") }
-    var estado by remember { mutableStateOf(atraque?.estado ?: "activo") }
+    var estado by remember { mutableStateOf(atraque?.estado ?: "programado") }
+    var dropdownExpanded by remember { mutableStateOf(false) }
+
+    // Helpers
+    val selectedBuque = buques.firstOrNull { it.id == (buqueIdText.toIntOrNull() ?: -1) }
+    val buqueHelper = selectedBuque?.nombre ?: "Ingrese un ID de buque válido"
+
+    val selectedMuelle = muelles.firstOrNull { it.id == (muelleIdText.toIntOrNull() ?: -1) }
+    val muelleHelper = selectedMuelle?.let { "Código: ${it.codigo} (${it.puerto.nombre})" } ?: "Ingrese un ID de muelle válido"
+
+    val selectedCapitan = capitanes.firstOrNull { it.id == (capitanIdText.toIntOrNull() ?: -1) }
+    val capitanHelper = selectedCapitan?.let { "${it.nombres} ${it.apellidos}" } ?: "Ingrese un ID de capitán válido"
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(text = if (atraque == null) "Nuevo Atraque" else "Editar Atraque", fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(value = buqueIdText, onValueChange = { buqueIdText = it }, label = { Text("ID de Buque") })
-                OutlinedTextField(value = muelleIdText, onValueChange = { muelleIdText = it }, label = { Text("ID de Muelle") })
-                OutlinedTextField(value = capitanIdText, onValueChange = { capitanIdText = it }, label = { Text("ID de Capitán") })
+                if (errorMessage != null) {
+                    Surface(
+                        color = RojoCoral.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(10.dp),
+                        border = BorderStroke(1.dp, RojoCoral.copy(alpha = 0.3f)),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                    ) {
+                        Text(
+                            text = errorMessage,
+                            color = RojoCoral,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(10.dp)
+                        )
+                    }
+                }
+
+                OutlinedTextField(
+                    value = buqueIdText,
+                    onValueChange = { buqueIdText = it },
+                    label = { Text("ID de Buque") },
+                    supportingText = { Text(text = buqueHelper, color = if (selectedBuque != null) VerdeEsmeralda else TextSecondary) }
+                )
+                OutlinedTextField(
+                    value = muelleIdText,
+                    onValueChange = { muelleIdText = it },
+                    label = { Text("ID de Muelle") },
+                    supportingText = { Text(text = muelleHelper, color = if (selectedMuelle != null) VerdeEsmeralda else TextSecondary) }
+                )
+                OutlinedTextField(
+                    value = capitanIdText,
+                    onValueChange = { capitanIdText = it },
+                    label = { Text("ID de Capitán") },
+                    supportingText = { Text(text = capitanHelper, color = if (selectedCapitan != null) VerdeEsmeralda else TextSecondary) }
+                )
                 OutlinedTextField(value = fechaIng, onValueChange = { fechaIng = it }, label = { Text("Fecha Ingreso") })
                 OutlinedTextField(value = fechaSal, onValueChange = { fechaSal = it }, label = { Text("Fecha Salida") })
-                OutlinedTextField(value = estado, onValueChange = { estado = it }, label = { Text("Estado") })
+                
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedButton(onClick = { dropdownExpanded = true }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Estado: ${estado.replace("_", " ").replaceFirstChar { it.uppercase() }}")
+                    }
+                    DropdownMenu(expanded = dropdownExpanded, onDismissRequest = { dropdownExpanded = false }) {
+                        listOf(
+                            "programado" to "Programado",
+                            "en_curso" to "En Curso",
+                            "finalizado" to "Finalizado",
+                            "cancelado" to "Cancelado"
+                        ).forEach { (valor, label) ->
+                            DropdownMenuItem(
+                                text = { Text(label) },
+                                onClick = {
+                                    estado = valor
+                                    dropdownExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
             }
         },
         confirmButton = {

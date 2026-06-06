@@ -16,6 +16,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.maritimo.control.ui.theme.*
 
+import androidx.compose.foundation.background
+
 @Composable
 fun MaritimoButton(
     text:      String,
@@ -23,43 +25,96 @@ fun MaritimoButton(
     modifier:  Modifier = Modifier,
     isLoading: Boolean  = false,
     enabled:   Boolean  = true,
+    useGradient: Boolean = false,
 ) {
-    val containerColor by animateColorAsState(
-        targetValue = if (enabled && !isLoading) PrimaryBlue else PrimaryBlue.copy(alpha = 0.4f),
-        animationSpec = tween(200),
-        label = "buttonColor"
-    )
-
-    Button(
-        onClick  = onClick,
-        enabled  = enabled && !isLoading,
-        modifier = modifier.fillMaxWidth().height(56.dp),
-        colors   = ButtonDefaults.buttonColors(
-            containerColor         = containerColor,
-            contentColor           = Color.White,
-            disabledContainerColor = PrimaryBlue.copy(alpha = 0.4f),
-            disabledContentColor   = Color.White.copy(alpha = 0.7f),
-        ),
-        shape = RoundedCornerShape(16.dp),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 4.dp,
-            pressedElevation = 1.dp,
-            hoveredElevation = 6.dp
-        )
-    ) {
-        if (isLoading) {
-            CircularProgressIndicator(
-                color     = Color.White,
-                modifier  = Modifier.size(22.dp),
-                strokeWidth = 2.5.dp,
-            )
-            Spacer(Modifier.width(12.dp))
+    if (useGradient) {
+        val brush = if (enabled && !isLoading) {
+            Brush.horizontalGradient(CyanGradient)
+        } else {
+            Brush.horizontalGradient(listOf(TechBlue.copy(alpha = 0.4f), NeonGlow.copy(alpha = 0.4f)))
         }
-        Text(
-            text = if (isLoading) "Cargando..." else text,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold
+
+        Button(
+            onClick  = onClick,
+            enabled  = enabled && !isLoading,
+            modifier = modifier.fillMaxWidth().height(56.dp),
+            colors   = ButtonDefaults.buttonColors(
+                containerColor         = Color.Transparent,
+                contentColor           = Color.White,
+                disabledContainerColor = Color.Transparent,
+                disabledContentColor   = Color.White.copy(alpha = 0.7f),
+            ),
+            shape = RoundedCornerShape(16.dp),
+            contentPadding = PaddingValues(),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 4.dp,
+                pressedElevation = 1.dp
+            )
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(brush, RoundedCornerShape(16.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            color     = Color.White,
+                            modifier  = Modifier.size(22.dp),
+                            strokeWidth = 2.5.dp,
+                        )
+                        Spacer(Modifier.width(12.dp))
+                    }
+                    Text(
+                        text = if (isLoading) "Cargando..." else text,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    } else {
+        val containerColor by animateColorAsState(
+            targetValue = if (enabled && !isLoading) PrimaryBlue else PrimaryBlue.copy(alpha = 0.4f),
+            animationSpec = tween(200),
+            label = "buttonColor"
         )
+
+        Button(
+            onClick  = onClick,
+            enabled  = enabled && !isLoading,
+            modifier = modifier.fillMaxWidth().height(56.dp),
+            colors   = ButtonDefaults.buttonColors(
+                containerColor         = containerColor,
+                contentColor           = Color.White,
+                disabledContainerColor = PrimaryBlue.copy(alpha = 0.4f),
+                disabledContentColor   = Color.White.copy(alpha = 0.7f),
+            ),
+            shape = RoundedCornerShape(16.dp),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 4.dp,
+                pressedElevation = 1.dp,
+                hoveredElevation = 6.dp
+            )
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    color     = Color.White,
+                    modifier  = Modifier.size(22.dp),
+                    strokeWidth = 2.5.dp,
+                )
+                Spacer(Modifier.width(12.dp))
+            }
+            Text(
+                text = if (isLoading) "Cargando..." else text,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 

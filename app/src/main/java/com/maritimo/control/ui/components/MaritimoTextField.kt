@@ -14,6 +14,8 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.dp
 import com.maritimo.control.ui.theme.*
@@ -32,6 +34,7 @@ fun MaritimoTextField(
     keyboardType:  KeyboardType = KeyboardType.Text,
     imeAction:     ImeAction    = ImeAction.Next,
     enabled:       Boolean      = true,
+    isDarkTheme:   Boolean      = false,
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
 
@@ -40,21 +43,13 @@ fun MaritimoTextField(
         else                           -> VisualTransformation.None
     }
 
-    val borderColor by animateColorAsState(
-        targetValue = when {
-            isError -> ErrorColor
-            else -> Border
-        },
-        animationSpec = tween(200),
-        label = "borderColor"
-    )
-
     Column(modifier = modifier) {
         OutlinedTextField(
             value           = value,
             onValueChange   = onValueChange,
             label           = { Text(label, style = MaterialTheme.typography.labelLarge) },
-            placeholder     = { Text(placeholder, color = TextFaint, style = MaterialTheme.typography.bodyLarge) },
+            placeholder     = { Text(placeholder, color = if (isDarkTheme) TextFaintTech else TextFaint, style = MaterialTheme.typography.bodyMedium) },
+            textStyle       = MaterialTheme.typography.bodyMedium,
             isError         = isError,
             visualTransformation = visualTransformation,
             keyboardOptions = KeyboardOptions(
@@ -66,15 +61,17 @@ fun MaritimoTextField(
             modifier        = Modifier.fillMaxWidth(),
             shape           = RoundedCornerShape(14.dp),
             colors          = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor     = PrimaryBlue,
-                focusedLabelColor      = PrimaryBlue,
-                cursorColor            = PrimaryBlue,
-                unfocusedBorderColor   = Border,
-                unfocusedLabelColor    = TextSecondary,
+                focusedTextColor       = if (isDarkTheme) Color.White else TextPrimary,
+                unfocusedTextColor     = if (isDarkTheme) Color.White else TextPrimary,
+                focusedBorderColor     = if (isDarkTheme) ElectricCyan else PrimaryBlue,
+                focusedLabelColor      = if (isDarkTheme) ElectricCyan else PrimaryBlue,
+                cursorColor            = if (isDarkTheme) ElectricCyan else PrimaryBlue,
+                unfocusedBorderColor   = if (isDarkTheme) GlassBorder else Border,
+                unfocusedLabelColor    = if (isDarkTheme) TextFaintTech else TextSecondary,
                 errorBorderColor       = ErrorColor,
                 errorLabelColor        = ErrorColor,
-                focusedContainerColor  = SurfaceColor,
-                unfocusedContainerColor = SurfaceColor,
+                focusedContainerColor  = if (isDarkTheme) DarkSurface.copy(alpha = 0.6f) else SurfaceColor,
+                unfocusedContainerColor = if (isDarkTheme) DarkSurface.copy(alpha = 0.4f) else SurfaceColor,
             ),
             trailingIcon = if (isPassword) {
                 {
@@ -85,7 +82,7 @@ fun MaritimoTextField(
                             else
                                 Icons.Default.Visibility,
                             contentDescription = if (passwordVisible) "Ocultar" else "Mostrar",
-                            tint = TextSecondary,
+                            tint = if (isDarkTheme) TextFaintTech else TextSecondary,
                         )
                     }
                 }

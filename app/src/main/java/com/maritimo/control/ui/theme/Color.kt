@@ -66,3 +66,25 @@ val SoftBlueGradient = listOf(LightBlue, SoftBlue)
 val HeroGradient    = listOf(PrimaryBlue, DarkBlue)
 val GoldGradient    = listOf(PremiumGold, Color(0xFFDAA520))
 val DarkGradient    = listOf(Color(0xFF0F172A), Color(0xFF1E293B))
+
+// ── Tech Theme (Nuevo estilo inmersivo) ─────────────────────────
+val DarkBackground  = Color(0xFF060B13)  // Azul Oscuro Profundo Tecnológico
+val DarkSurface     = Color(0xFF0C1726)  // Tarjetas oscuras translúcidas
+val ElectricCyan    = Color(0xFF00E5FF)  // Cian Neón
+val TechBlue        = Color(0xFF007EA7)  // Azul Eléctrico
+val NeonGlow        = Color(0xFF00A8E8)  // Cyan Eléctrico
+val GlassBorder     = Color(0xFF1E2E4A)  // Bordes sutiles para Glassmorphism
+val TextFaintTech   = Color(0xFF8D99AE)  // Textos secundarios apagados
+val TechGradient    = listOf(DarkBackground, Color(0xFF0B1B33))
+val CyanGradient    = listOf(TechBlue, NeonGlow)
+
+// ── Paleta de Colores "Marítimo Profesional" (Personalizada) ───────
+val AzulAbisal      = Color(0xFF0A1128)  // Azul Marino Profundo (Fondo)
+val AzulAcero       = Color(0xFF007EA7)  // Acentor y enlaces activos
+val CianElectrico   = Color(0xFF00A8E8)  // Acento secundario neón
+val BlancoHielo     = Color(0xFFF4F7F6)  // Tarjetas y contenedores
+val VerdeEsmeralda  = Color(0xFF2EC4B6)  // Estado Exitoso
+val AmbarAlerta     = Color(0xFFFF9F1C)  // Estado Advertencia
+val RojoCoral       = Color(0xFFE71D36)  // Estado Crítico
+val AbisalGradient  = listOf(AzulAbisal, Color(0xFF131D3F))
+

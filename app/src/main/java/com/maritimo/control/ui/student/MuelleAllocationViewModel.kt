@@ -46,6 +46,10 @@ class MuelleAllocationViewModel @Inject constructor(
         loadData()
     }
 
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
+
     fun updateMuelleSearch(query: String) {
         _uiState.update { it.copy(muelleSearch = query) }
         loadData()

@@ -1,7 +1,9 @@
 package com.maritimo.control.ui.auth
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -14,15 +16,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.maritimo.control.R
 import com.maritimo.control.ui.components.MaritimoTextField
 import com.maritimo.control.ui.components.MaritimoButton
 import com.maritimo.control.ui.viewmodel.AuthViewModel
@@ -55,261 +61,217 @@ fun RegisterScreen(
     val isLoading = uiState is AuthUiState.Loading
     val errorMsg = (uiState as? AuthUiState.Error)?.message
 
+    val backgroundGradient = Brush.verticalGradient(
+        colors = listOf(
+            Color(0xFF0A1E36), // Azul abisal oscuro
+            Color(0xFF134074), // Azul acero real
+            Color(0xFF225791)  // Azul claro enérgico
+        )
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundColor)
+            .background(backgroundGradient)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // --- CABECERA DE GRADIENTE ADAPTATIVA ---
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight() // <-- CAMBIO CLAVE: Evita que el título se corte
+            Spacer(Modifier.height(36.dp))
+
+            // --- CABECERA ---
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(horizontal = 24.dp)
             ) {
-                // Fondo con degradado dinámico
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .clip(
-                            RoundedCornerShape(
-                                bottomStart = 40.dp,
-                                bottomEnd = 40.dp
-                            )
-                        )
-                        .background(
-                            Brush.linearGradient(
-                                listOf(PrimaryBlue, DarkBlue)
-                            )
-                        )
-                )
-
-                // Decoraciones geométricas
-                Box(
-                    modifier = Modifier
-                        .size(160.dp)
-                        .align(Alignment.TopEnd)
-                        .offset(x = 40.dp, y = (-20).dp)
-                        .clip(CircleShape)
-                        .background(PrimaryRed.copy(alpha = 0.15f))
-                )
-                Box(
-                    modifier = Modifier
-                        .size(80.dp)
-                        .align(Alignment.BottomStart)
-                        .offset(x = (-15).dp, y = (-15).dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.04f))
-                )
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .align(Alignment.CenterEnd)
-                        .offset(x = (-30).dp, y = 10.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(PrimaryRed.copy(alpha = 0.2f))
-                )
-
-                // Contenido de la cabecera (Logo, Título, Subtítulo)
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        // Agregamos padding bottom de 56.dp para tolerar el solapamiento de la tarjeta blanca
-                        .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 56.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Card(
+                    shape = CircleShape,
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                    modifier = Modifier.size(120.dp)
                 ) {
                     Box(
-                        modifier = Modifier
-                            .size(80.dp)
-                            .shadow(14.dp, CircleShape)
-                            .clip(CircleShape)
-                            .background(Color.White),
+                        modifier = Modifier.fillMaxSize().padding(10.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Box(
+                        Image(
+                            painter = painterResource(id = R.drawable.logo_ecupuerto),
+                            contentDescription = "Logo EcuPuerto",
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(12.dp))
+
+                Text(
+                    text = "Crea tu cuenta",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Color.White,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = (-0.5).sp
+                )
+
+                Spacer(Modifier.height(4.dp))
+
+                Text(
+                    text = "Únete a la plataforma digital de gestión portuaria",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontSize = 13.sp,
+                        letterSpacing = 0.2.sp
+                    ),
+                    color = Color.White.copy(alpha = 0.8f),
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            Spacer(Modifier.height(20.dp))
+
+            // --- TARJETA DARK-THEMED ---
+            Card(
+                shape = RoundedCornerShape(28.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFF0C1726).copy(alpha = 0.9f)
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 16.dp),
+                border = BorderStroke(1.dp, GlassBorder),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .widthIn(max = 450.dp)
+            ) {
+                Column(modifier = Modifier.padding(28.dp)) {
+
+                    // Alerta de Error estilizada
+                    if (errorMsg != null) {
+                        Surface(
+                            color = RojoCoral.copy(alpha = 0.12f),
+                            shape = RoundedCornerShape(14.dp),
                             modifier = Modifier
-                                .size(64.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    Brush.linearGradient(
-                                        listOf(PrimaryRed, PrimaryBlue)
-                                    )
-                                ),
-                            contentAlignment = Alignment.Center
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            border = BorderStroke(1.dp, RojoCoral.copy(alpha = 0.3f))
                         ) {
-                            Text(
-                                text = "M",
-                                fontSize = 30.sp,
-                                fontWeight = FontWeight.Black,
-                                color = Color.White
-                            )
+                            Row(
+                                modifier = Modifier.padding(14.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.ErrorOutline,
+                                    contentDescription = null,
+                                    tint = RojoCoral,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(Modifier.width(10.dp))
+                                Text(
+                                    text = errorMsg,
+                                    color = RojoCoral,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.Medium,
+                                )
+                            }
                         }
                     }
 
-                    Spacer(Modifier.height(14.dp))
+                    MaritimoTextField(
+                        value = username,
+                        onValueChange = { username = it; viewModel.clearError() },
+                        label = "Nombre de usuario",
+                        placeholder = "Mínimo 3 caracteres",
+                        enabled = !isLoading,
+                        isError = username.isNotEmpty() && username.length < 3,
+                        errorMessage = "Mínimo 3 caracteres",
+                        imeAction = ImeAction.Next,
+                        isDarkTheme = true,
+                    )
+                    Spacer(Modifier.height(16.dp))
 
-                    Text(
-                        text = "Crea tu cuenta",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = Color.White,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = (-0.5).sp
+                    MaritimoTextField(
+                        value = email,
+                        onValueChange = { email = it; viewModel.clearError() },
+                        label = "Correo electrónico",
+                        placeholder = "ejemplo@dominio.com",
+                        enabled = !isLoading,
+                        keyboardType = KeyboardType.Email,
+                        isError = email.isNotEmpty() && !email.contains("@"),
+                        errorMessage = "Email inválido",
+                        imeAction = ImeAction.Next,
+                        isDarkTheme = true,
+                    )
+                    Spacer(Modifier.height(16.dp))
+
+                    MaritimoTextField(
+                        value = password,
+                        onValueChange = { password = it; viewModel.clearError() },
+                        label = "Contraseña",
+                        placeholder = "Mínimo 8 caracteres",
+                        isPassword = true,
+                        enabled = !isLoading,
+                        keyboardType = KeyboardType.Password,
+                        isError = password.isNotEmpty() && password.length < 8,
+                        errorMessage = "Mínimo 8 caracteres",
+                        imeAction = ImeAction.Next,
+                        isDarkTheme = true,
+                    )
+                    Spacer(Modifier.height(16.dp))
+
+                    MaritimoTextField(
+                        value = password2,
+                        onValueChange = { password2 = it; viewModel.clearError() },
+                        label = "Confirmar contraseña",
+                        placeholder = "Repite la contraseña",
+                        isPassword = true,
+                        enabled = !isLoading,
+                        keyboardType = KeyboardType.Password,
+                        isError = passwordMismatch,
+                        errorMessage = "Las contraseñas no coinciden",
+                        imeAction = ImeAction.Done,
+                        isDarkTheme = true,
                     )
 
-                    Spacer(Modifier.height(4.dp))
+                    Spacer(Modifier.height(24.dp))
 
-                    Text(
-                        text = "Gestiona operaciones portuarias",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White.copy(alpha = 0.8f),
+                    val canSubmit = username.length >= 3 &&
+                            email.contains("@") &&
+                            password.length >= 8 &&
+                            !passwordMismatch &&
+                            !isLoading
+
+                    MaritimoButton(
+                        text = "Crear Cuenta",
+                        onClick = { viewModel.register(username.trim(), email.trim(), password, password2) },
+                        isLoading = isLoading,
+                        enabled = canSubmit,
+                        useGradient = true,
                     )
                 }
             }
 
-            // --- SECCIÓN DEL FORMULARIO (TARJETA BLANCA) ---
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .offset(y = (-32).dp) // Desplazamiento controlado hacia arriba
-                    .padding(horizontal = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            Spacer(Modifier.height(24.dp))
+
+            // Footer (Volver al login)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 32.dp)
             ) {
-                Surface(
-                    shape = RoundedCornerShape(28.dp),
-                    color = SurfaceColor,
-                    shadowElevation = 8.dp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .widthIn(max = 450.dp)
-                ) {
-                    Column(modifier = Modifier.padding(28.dp)) {
-
-                        // Alerta de Error optimizada
-                        if (errorMsg != null) {
-                            Surface(
-                                color = LightRed,
-                                shape = RoundedCornerShape(14.dp),
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                                border = BorderStroke(1.dp, PrimaryRed.copy(alpha = 0.2f))
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(14.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.ErrorOutline,
-                                        contentDescription = null,
-                                        tint = PrimaryRed,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(Modifier.width(10.dp))
-                                    Text(
-                                        text = errorMsg,
-                                        color = PrimaryRed,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        fontWeight = FontWeight.Medium,
-                                    )
-                                }
-                            }
-                        }
-
-                        MaritimoTextField(
-                            value = username,
-                            onValueChange = { username = it; viewModel.clearError() },
-                            label = "Nombre de usuario",
-                            placeholder = "Mínimo 3 caracteres",
-                            enabled = !isLoading,
-                            isError = username.isNotEmpty() && username.length < 3,
-                            errorMessage = "Mínimo 3 caracteres",
-                            imeAction = ImeAction.Next,
-                        )
-                        Spacer(Modifier.height(16.dp))
-
-                        MaritimoTextField(
-                            value = email,
-                            onValueChange = { email = it; viewModel.clearError() },
-                            label = "Correo electrónico",
-                            placeholder = "ejemplo@dominio.com",
-                            enabled = !isLoading,
-                            keyboardType = KeyboardType.Email,
-                            isError = email.isNotEmpty() && !email.contains("@"),
-                            errorMessage = "Email inválido",
-                            imeAction = ImeAction.Next,
-                        )
-                        Spacer(Modifier.height(16.dp))
-
-                        MaritimoTextField(
-                            value = password,
-                            onValueChange = { password = it; viewModel.clearError() },
-                            label = "Contraseña",
-                            placeholder = "Mínimo 8 caracteres",
-                            isPassword = true,
-                            enabled = !isLoading,
-                            keyboardType = KeyboardType.Password,
-                            isError = password.isNotEmpty() && password.length < 8,
-                            errorMessage = "Mínimo 8 caracteres",
-                            imeAction = ImeAction.Next,
-                        )
-                        Spacer(Modifier.height(16.dp))
-
-                        MaritimoTextField(
-                            value = password2,
-                            onValueChange = { password2 = it; viewModel.clearError() },
-                            label = "Confirmar contraseña",
-                            placeholder = "Repite la contraseña",
-                            isPassword = true,
-                            enabled = !isLoading,
-                            keyboardType = KeyboardType.Password,
-                            isError = passwordMismatch,
-                            errorMessage = "Las contraseñas no coinciden",
-                            imeAction = ImeAction.Done,
-                        )
-
-                        Spacer(Modifier.height(24.dp))
-
-                        val canSubmit = username.length >= 3 &&
-                                email.contains("@") &&
-                                password.length >= 8 &&
-                                !passwordMismatch &&
-                                !isLoading
-
-                        MaritimoButton(
-                            text = "Crear Cuenta",
-                            onClick = { viewModel.register(username.trim(), email.trim(), password, password2) },
-                            isLoading = isLoading,
-                            enabled = canSubmit,
-                        )
-                    }
-                }
-
-                Spacer(Modifier.height(24.dp))
-
-                // Footer (Volver al login)
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(bottom = 32.dp)
+                Text(
+                    text = "¿Ya tienes una cuenta? ",
+                    color = Color.White.copy(alpha = 0.85f),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                TextButton(
+                    onClick = onNavigateToLogin,
+                    contentPadding = PaddingValues(horizontal = 4.dp)
                 ) {
                     Text(
-                        text = "¿Ya tienes una cuenta? ",
-                        color = TextSecondary,
+                        text = "Inicia sesión",
+                        color = CianElectrico,
                         style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
                     )
-                    TextButton(
-                        onClick = onNavigateToLogin,
-                        contentPadding = PaddingValues(horizontal = 4.dp)
-                    ) {
-                        Text(
-                            text = "Inicia sesión",
-                            color = PrimaryRed,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
                 }
             }
         }

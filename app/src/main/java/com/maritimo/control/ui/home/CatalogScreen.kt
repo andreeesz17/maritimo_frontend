@@ -1,5 +1,6 @@
 package com.maritimo.control.ui.home
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -50,7 +51,7 @@ fun CatalogScreen(
     }
 
     Scaffold(
-        containerColor = BackgroundColor,
+        containerColor = AzulAbisal,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
@@ -81,7 +82,7 @@ fun CatalogScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PrimaryBlue
+                    containerColor = AzulAbisal
                 )
             )
         },
@@ -92,8 +93,9 @@ fun CatalogScreen(
                         selectedCapitanForEdit = null
                         showCreateEditDialog = true
                     },
-                    containerColor = PrimaryBlue,
-                    contentColor = Color.White
+                    containerColor = AzulAcero,
+                    contentColor = Color.White,
+                    shape = RoundedCornerShape(16.dp)
                 ) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Añadir Capitán")
                 }
@@ -108,15 +110,25 @@ fun CatalogScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Search Bar
+            // Search Bar (Estilo Premium Marítimo Profesional)
             OutlinedTextField(
                 value = state.searchQuery,
                 onValueChange = { viewModel.updateSearchQuery(it) },
-                placeholder = { Text("Buscar capitán por nombre...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                placeholder = { Text("Buscar capitán por nombre...", color = Color.White.copy(alpha = 0.5f)) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = CianElectrico) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(14.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedBorderColor = CianElectrico,
+                    focusedLabelColor = CianElectrico,
+                    cursorColor = CianElectrico,
+                    unfocusedBorderColor = CianElectrico.copy(alpha = 0.15f),
+                    focusedContainerColor = Color(0xFF1B2A4A).copy(alpha = 0.4f),
+                    unfocusedContainerColor = Color(0xFF1B2A4A).copy(alpha = 0.2f)
+                )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -129,14 +141,14 @@ fun CatalogScreen(
                 contentAlignment = Alignment.Center
             ) {
                 if (state.isLoading && state.capitanes.isEmpty()) {
-                    CircularProgressIndicator(color = PrimaryBlue)
+                    CircularProgressIndicator(color = CianElectrico)
                 } else if (state.capitanes.isEmpty()) {
-                    Text("No se encontraron capitanes registrados.", color = TextSecondary)
+                    Text("No se encontraron capitanes registrados.", color = Color.White.copy(alpha = 0.7f))
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(bottom = 16.dp)
+                        contentPadding = PaddingValues(bottom = 80.dp)
                     ) {
                         items(state.capitanes, key = { it.id }) { capitan ->
                             CapitanCardItem(
@@ -161,7 +173,7 @@ fun CatalogScreen(
                                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                                     Button(
                                         onClick = { viewModel.loadMoreCapitanes() },
-                                        colors = ButtonDefaults.buttonColors(containerColor = AccentBlue)
+                                        colors = ButtonDefaults.buttonColors(containerColor = AzulAcero)
                                     ) {
                                         Text("Cargar más")
                                     }
@@ -216,11 +228,11 @@ fun CapitanCardItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, Border, RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(24.dp))
             .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = SurfaceColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors = CardDefaults.cardColors(containerColor = BlancoHielo),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        border = BorderStroke(1.dp, Border)
     ) {
         Row(
             modifier = Modifier
@@ -236,19 +248,19 @@ fun CapitanCardItem(
                 Box(
                     modifier = Modifier
                         .size(40.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(LightBlue),
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(AzulAbisal),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = capitan.nombres.firstOrNull()?.toString() ?: "",
                         fontWeight = FontWeight.Bold,
-                        color = PrimaryBlue,
+                        color = CianElectrico,
                         fontSize = 18.sp
                     )
                 }
                 Spacer(modifier = Modifier.width(12.dp))
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "${capitan.nombres} ${capitan.apellidos}",
                         fontSize = 16.sp,
@@ -257,21 +269,27 @@ fun CapitanCardItem(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = "Licencia: ${capitan.licenciaNavegacion} | ${capitan.nacionalidad}",
                         fontSize = 12.sp,
-                        color = TextSecondary
+                        color = TextSecondary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
 
             if (isAdmin) {
-                Row {
-                    IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Default.Edit, contentDescription = "Editar", tint = AccentBlue, modifier = Modifier.size(18.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    IconButton(onClick = onEdit, modifier = Modifier.size(28.dp)) {
+                        Icon(Icons.Default.Edit, contentDescription = "Editar", tint = AzulAcero, modifier = Modifier.size(16.dp))
                     }
-                    IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = ErrorColor, modifier = Modifier.size(18.dp))
+                    IconButton(onClick = onDelete, modifier = Modifier.size(28.dp)) {
+                        Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = RojoCoral, modifier = Modifier.size(16.dp))
                     }
                 }
             }
@@ -326,6 +344,7 @@ fun CapitanDetailDialog(
         title = { Text(text = "${capitan.nombres} ${capitan.apellidos}", fontWeight = FontWeight.Black, color = PrimaryBlue) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                DetailField("ID de Capitán en Sistema", capitan.id.toString())
                 DetailField("Licencia Registrada", capitan.licenciaNavegacion)
                 DetailField("Nacionalidad", capitan.nacionalidad)
             }

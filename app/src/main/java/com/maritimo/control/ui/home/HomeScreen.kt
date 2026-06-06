@@ -1,11 +1,13 @@
 package com.maritimo.control.ui.home
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
@@ -22,6 +24,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.draw.alpha
+import com.maritimo.control.R
 import com.maritimo.control.data.remote.dto.BuqueDto
 import com.maritimo.control.ui.theme.*
 import com.maritimo.control.ui.viewmodel.CartViewModel
@@ -62,7 +68,7 @@ fun HomeScreen(
     }
 
     Scaffold(
-        containerColor = BackgroundColor,
+        containerColor = AzulAbisal,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
@@ -100,21 +106,24 @@ fun HomeScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PrimaryBlue
+                    containerColor = AzulAbisal
                 )
             )
         },
         floatingActionButton = {
             if (isAdmin) {
-                FloatingActionButton(
-                    onClick = {
-                        selectedBuqueForEdit = null
-                        showCreateEditDialog = true
-                    },
-                    containerColor = PrimaryBlue,
-                    contentColor = Color.White
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Brush.linearGradient(listOf(AzulAcero, CianElectrico)))
+                        .clickable {
+                            selectedBuqueForEdit = null
+                            showCreateEditDialog = true
+                        },
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Añadir Buque")
+                    Icon(Icons.Default.Add, contentDescription = "Añadir Buque", tint = Color.White)
                 }
             }
         }
@@ -127,13 +136,12 @@ fun HomeScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 1. Tarjeta de Bienvenida
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .border(1.dp, Border, RoundedCornerShape(16.dp)),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    .clip(RoundedCornerShape(24.dp))
+                    .border(BorderStroke(1.5.dp, CianElectrico.copy(alpha = 0.25f)), RoundedCornerShape(24.dp)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
                 Box(
@@ -141,38 +149,68 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .background(
                             Brush.verticalGradient(
-                                colors = listOf(PrimaryBlue, AccentBlue)
+                                colors = listOf(AzulAbisal, Color(0xFF13254A))
                             )
                         )
                         .padding(20.dp)
                 ) {
-                    Column {
-                        Text(
-                            text = "Panel de Control Marítimo",
-                            color = Color.White,
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Operador de turno: ${state.userName} (${if (isAdmin) "Admin/Staff" else "Lectura"})",
-                            color = Color.White.copy(alpha = 0.85f),
-                            fontSize = 14.sp
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "EcuPuerto Dashboard",
+                                color = Color.White,
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Operador: ${state.userName}",
+                                color = Color.White.copy(alpha = 0.8f),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = if (isAdmin) "Rol: Administrador" else "Rol: Operador de Consulta",
+                                color = CianElectrico,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                StatMiniBadge(
+                                    icon = Icons.Default.DirectionsBoat,
+                                    value = state.buques.size.toString(),
+                                    label = "Total Buques"
+                                )
+                                StatMiniBadge(
+                                    icon = Icons.Default.Anchor,
+                                    value = state.buques.filter { it.id % 2 == 0 }.size.toString(),
+                                    label = "En Puerto"
+                                )
+                            }
+                        }
+                        Card(
+                            shape = CircleShape,
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            modifier = Modifier.size(80.dp)
                         ) {
-                            StatMiniBadge(
-                                icon = Icons.Default.DirectionsBoat,
-                                value = state.buques.size.toString(),
-                                label = "Total Buques"
-                            )
-                            StatMiniBadge(
-                                icon = Icons.Default.Anchor,
-                                value = state.buques.filter { it.id % 2 == 0 }.size.toString(),
-                                label = "En Puerto"
-                            )
+                            Box(
+                                modifier = Modifier.fillMaxSize().padding(6.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.logo_ecupuerto),
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
                         }
                     }
                 }
@@ -184,11 +222,21 @@ fun HomeScreen(
             OutlinedTextField(
                 value = state.searchQuery,
                 onValueChange = { viewModel.updateSearchQuery(it) },
-                placeholder = { Text("Buscar buque por nombre o matrícula...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                placeholder = { Text("Buscar buque por nombre o matrícula...", color = Color.White.copy(alpha = 0.5f)) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = CianElectrico) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(14.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedBorderColor = CianElectrico,
+                    focusedLabelColor = CianElectrico,
+                    cursorColor = CianElectrico,
+                    unfocusedBorderColor = CianElectrico.copy(alpha = 0.15f),
+                    focusedContainerColor = Color(0xFF1B2A4A).copy(alpha = 0.4f),
+                    unfocusedContainerColor = Color(0xFF1B2A4A).copy(alpha = 0.2f)
+                )
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -198,7 +246,7 @@ fun HomeScreen(
                 text = "Buques en Terminal",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = TextPrimary,
+                color = Color.White,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
@@ -210,7 +258,7 @@ fun HomeScreen(
                 contentAlignment = Alignment.Center
             ) {
                 if (state.isLoading && state.buques.isEmpty()) {
-                    CircularProgressIndicator(color = PrimaryBlue)
+                    CircularProgressIndicator(color = CianElectrico)
                 } else if (state.buques.isEmpty()) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -220,13 +268,13 @@ fun HomeScreen(
                         Icon(
                             imageVector = Icons.Default.Anchor,
                             contentDescription = null,
-                            tint = TextTertiary,
+                            tint = Color.White.copy(alpha = 0.4f),
                             modifier = Modifier.size(56.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "No se encontraron buques en el sistema.",
-                            color = TextSecondary,
+                            color = Color.White.copy(alpha = 0.7f),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -235,7 +283,7 @@ fun HomeScreen(
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(bottom = 16.dp)
+                        contentPadding = PaddingValues(bottom = 88.dp)
                     ) {
                         items(state.buques, key = { it.id }) { buque ->
                             BuqueItemCard(
@@ -264,11 +312,11 @@ fun HomeScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     if (state.isLoading) {
-                                        CircularProgressIndicator(color = PrimaryBlue, modifier = Modifier.size(24.dp))
+                                        CircularProgressIndicator(color = CianElectrico, modifier = Modifier.size(24.dp))
                                     } else {
                                         Button(
                                             onClick = { viewModel.loadMoreBuques() },
-                                            colors = ButtonDefaults.buttonColors(containerColor = AccentBlue)
+                                            colors = ButtonDefaults.buttonColors(containerColor = AzulAcero)
                                         ) {
                                             Text("Cargar más buques")
                                         }
@@ -326,7 +374,7 @@ fun StatMiniBadge(icon: ImageVector, value: String, label: String) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = Color.White,
+            tint = CianElectrico,
             modifier = Modifier.size(16.dp)
         )
         Spacer(modifier = Modifier.width(6.dp))
@@ -357,96 +405,110 @@ fun BuqueItemCard(
     onDelete: () -> Unit
 ) {
     val (statusLabel, statusColor) = when {
-        buque.id % 3 == 0 -> "En Fondeo" to Warning
-        buque.id % 2 == 0 -> "En Muelle" to Success
-        else -> "En Tránsito" to Info
+        buque.id % 3 == 0 -> "En Fondeo" to AmbarAlerta
+        buque.id % 2 == 0 -> "En Muelle" to VerdeEsmeralda
+        else -> "En Tránsito" to AzulAcero
     }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .border(1.dp, Border, RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(24.dp))
             .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = SurfaceColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors = CardDefaults.cardColors(containerColor = BlancoHielo),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        border = BorderStroke(1.dp, Border)
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .height(IntrinsicSize.Min)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = buque.nombre,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextPrimary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
-                )
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(
-                        color = statusColor.copy(alpha = 0.15f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = statusLabel,
-                            color = statusColor,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
-
-                    if (isAdmin) {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        IconButton(onClick = onEdit, modifier = Modifier.size(28.dp)) {
-                            Icon(Icons.Default.Edit, contentDescription = "Editar", tint = AccentBlue, modifier = Modifier.size(16.dp))
-                        }
-                        IconButton(onClick = onDelete, modifier = Modifier.size(28.dp)) {
-                            Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = ErrorColor, modifier = Modifier.size(16.dp))
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-            
-            Text(
-                text = "Matrícula: ${buque.matricula}",
-                color = TextSecondary,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium
+            Box(
+                modifier = Modifier
+                    .width(6.dp)
+                    .fillMaxHeight()
+                    .background(statusColor)
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(color = Divider, thickness = 1.dp)
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(16.dp)
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "TIPO DE BUQUE", color = TextTertiary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                    Text(text = buque.tipoBuque, color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = buque.nombre,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            color = statusColor.copy(alpha = 0.12f),
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, statusColor.copy(alpha = 0.3f))
+                        ) {
+                            Text(
+                                text = statusLabel,
+                                color = statusColor,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                            )
+                        }
+
+                        if (isAdmin) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            IconButton(onClick = onEdit, modifier = Modifier.size(28.dp)) {
+                                Icon(Icons.Default.Edit, contentDescription = "Editar", tint = AzulAcero, modifier = Modifier.size(16.dp))
+                            }
+                            IconButton(onClick = onDelete, modifier = Modifier.size(28.dp)) {
+                                Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = RojoCoral, modifier = Modifier.size(16.dp))
+                            }
+                        }
+                    }
                 }
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "BANDERA / ORIGEN", color = TextTertiary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                    Text(text = buque.paisOrigen, color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-                }
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                Text(
+                    text = "Matrícula: ${buque.matricula}",
+                    color = TextSecondary,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium
+                )
 
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "CAP. CARGA", color = TextTertiary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                    Text(text = "${buque.capacidadCarga} Ton", color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Black)
+                Spacer(modifier = Modifier.height(12.dp))
+                HorizontalDivider(color = Divider, thickness = 1.dp)
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(text = "TIPO", color = TextTertiary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                        Text(text = buque.tipoBuque, color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(text = "BANDERA", color = TextTertiary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                        Text(text = buque.paisOrigen, color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(text = "CAPACIDAD", color = TextTertiary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                        Text(text = "${buque.capacidadCarga} Ton", color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Black, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
                 }
             }
         }
@@ -504,6 +566,7 @@ fun BuqueDetailDialog(
         title = { Text(text = buque.nombre, fontWeight = FontWeight.Black, color = PrimaryBlue) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                DetailField("ID de Buque en Sistema", buque.id.toString())
                 DetailField("Matrícula Oficial", buque.matricula)
                 DetailField("Categoría de Buque", buque.tipoBuque)
                 DetailField("Capacidad Nominal", "${buque.capacidadCarga} Toneladas métricas")

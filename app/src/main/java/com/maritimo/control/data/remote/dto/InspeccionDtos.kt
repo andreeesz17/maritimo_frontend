@@ -21,7 +21,8 @@ data class BuqueNameDto(
 )
 
 data class MuelleCodeDto(
-    @SerializedName("codigo") val codigo: String
+    @SerializedName("codigo") val codigo: String,
+    @SerializedName("puerto") val puerto: PuertoShortDto
 )
 
 data class InspeccionCreateDto(

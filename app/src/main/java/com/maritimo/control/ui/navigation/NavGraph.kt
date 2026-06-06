@@ -19,7 +19,7 @@ import com.maritimo.control.ui.course.ExerciseScreen
 import com.maritimo.control.ui.course.LearningPathScreen
 import com.maritimo.control.ui.course.JoinClassScreen
 import com.maritimo.control.ui.teacher.TeacherDashboardScreen
-import com.maritimo.control.ui.games.GameCenterScreen
+import com.maritimo.control.ui.games.InspectionsScreen
 import com.maritimo.control.ui.games.WordMatchScreen
 import com.maritimo.control.ui.games.FlashcardsScreen
 import com.maritimo.control.ui.games.SentenceBuilderScreen
@@ -51,6 +51,7 @@ import com.maritimo.control.ui.student.MyCertificatesScreen
 import com.maritimo.control.ui.student.AchievementsScreen
 import com.maritimo.control.ui.student.LeaderboardScreen
 import com.maritimo.control.ui.theme.SurfaceColor
+import com.maritimo.control.ui.theme.AzulAbisal
 
 @Composable
 fun NavGraph(
@@ -130,7 +131,7 @@ private fun NavGraphContent(
     )
 
     Scaffold(
-        containerColor = SurfaceColor,
+        containerColor = AzulAbisal,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             if (showBottomBar) {
@@ -311,7 +312,7 @@ private fun NavGraphContent(
             }
 
             composable(Screen.GameCenter.route) {
-                GameCenterScreen(
+                InspectionsScreen(
                     onNavigateToGame = { gameId ->
                         when (gameId) {
                             "word_match"       -> navController.navigate(Screen.WordMatch.route)

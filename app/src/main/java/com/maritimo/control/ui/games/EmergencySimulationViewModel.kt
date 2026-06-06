@@ -2,10 +2,16 @@ package com.maritimo.control.ui.games
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.maritimo.control.data.remote.dto.BuqueDto
+import com.maritimo.control.data.remote.dto.MuelleDto
+import com.maritimo.control.data.remote.dto.CapitanDto
 import com.maritimo.control.data.remote.dto.AtraqueDto
 import com.maritimo.control.data.remote.dto.AtraqueCreateDto
 import com.maritimo.control.data.remote.dto.InspeccionDto
 import com.maritimo.control.data.remote.dto.InspeccionCreateDto
+import com.maritimo.control.domain.repository.BuqueRepository
+import com.maritimo.control.domain.repository.MuelleRepository
+import com.maritimo.control.domain.repository.CapitanRepository
 import com.maritimo.control.domain.repository.AtraqueRepository
 import com.maritimo.control.domain.repository.InspeccionRepository
 import com.maritimo.control.util.HttpErrorHandler
@@ -21,6 +27,9 @@ data class EmergencySimulationUiState(
     val isLoading: Boolean = false,
     val inspecciones: List<InspeccionDto> = emptyList(),
     val atraques: List<AtraqueDto> = emptyList(),
+    val buques: List<BuqueDto> = emptyList(),
+    val muelles: List<MuelleDto> = emptyList(),
+    val capitanes: List<CapitanDto> = emptyList(),
     val error: String? = null,
     val inspeccionSearch: String = "",
     val atraqueSearch: String = "",
@@ -33,7 +42,10 @@ data class EmergencySimulationUiState(
 @HiltViewModel
 class EmergencySimulationViewModel @Inject constructor(
     private val inspeccionRepository: InspeccionRepository,
-    private val atraqueRepository: AtraqueRepository
+    private val atraqueRepository: AtraqueRepository,
+    private val buqueRepository: BuqueRepository,
+    private val muelleRepository: MuelleRepository,
+    private val capitanRepository: CapitanRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EmergencySimulationUiState())
@@ -65,15 +77,25 @@ class EmergencySimulationViewModel @Inject constructor(
                     page = 1,
                     estado = _uiState.value.atraqueSearch.takeIf { it.isNotBlank() }
                 )
+                val buquesRes = buqueRepository.getBuques(page = 1, search = null)
+                val muellesRes = muelleRepository.getMuelles(page = 1, search = null)
+                val capitanesRes = capitanRepository.getCapitanes(page = 1, search = null)
 
                 if (insResponse.isSuccessful && atrResponse.isSuccessful) {
                     val insList = insResponse.body()?.results ?: emptyList()
                     val atrList = atrResponse.body()?.results ?: emptyList()
+                    val bList = if (buquesRes.isSuccessful) buquesRes.body()?.results ?: emptyList() else emptyList()
+                    val mList = if (muellesRes.isSuccessful) muellesRes.body()?.results ?: emptyList() else emptyList()
+                    val cList = if (capitanesRes.isSuccessful) capitanesRes.body()?.results ?: emptyList() else emptyList()
+                    
                     _uiState.update {
                         it.copy(
                             isLoading = false,
                             inspecciones = insList,
                             atraques = atrList,
+                            buques = bList,
+                            muelles = mList,
+                            capitanes = cList,
                             hasMoreInspecciones = insResponse.body()?.next != null,
                             hasMoreAtraques = atrResponse.body()?.next != null
                         )
