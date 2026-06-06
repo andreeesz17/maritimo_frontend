@@ -46,6 +46,10 @@ fun InspectionsScreen(
     var selectedInspeccionForEdit by remember { mutableStateOf<InspeccionDto?>(null) }
     var showAtraqueDialog by remember { mutableStateOf(false) }
     var selectedAtraqueForEdit by remember { mutableStateOf<AtraqueDto?>(null) }
+    var showDetailInspeccionDialog by remember { mutableStateOf(false) }
+    var selectedInspeccionForDetail by remember { mutableStateOf<InspeccionDto?>(null) }
+    var showDetailAtraqueDialog by remember { mutableStateOf(false) }
+    var selectedAtraqueForDetail by remember { mutableStateOf<AtraqueDto?>(null) }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -212,6 +216,10 @@ fun InspectionsScreen(
                                         InspeccionCardItem(
                                             inspeccion = inspeccion,
                                             isAdmin = isAdmin,
+                                            onClick = {
+                                                selectedInspeccionForDetail = inspeccion
+                                                showDetailInspeccionDialog = true
+                                            },
                                             onEdit = {
                                                 selectedInspeccionForEdit = inspeccion
                                                 showInspeccionDialog = true
@@ -250,6 +258,10 @@ fun InspectionsScreen(
                                         AtraqueCardItem(
                                             atraque = atraque,
                                             isAdmin = isAdmin,
+                                            onClick = {
+                                                selectedAtraqueForDetail = atraque
+                                                showDetailAtraqueDialog = true
+                                            },
                                             onEdit = {
                                                 selectedAtraqueForEdit = atraque
                                                 showAtraqueDialog = true
@@ -315,6 +327,58 @@ fun InspectionsScreen(
                 }
             }
         )
+     }
+
+    // Dialogos de Detalle
+    if (showDetailInspeccionDialog && selectedInspeccionForDetail != null) {
+        AlertDialog(
+            onDismissRequest = { showDetailInspeccionDialog = false },
+            title = { Text(text = "Inspección #${selectedInspeccionForDetail!!.id}", fontWeight = FontWeight.Black, color = PrimaryBlue) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    DetailFieldInspeccion("Buque", selectedInspeccionForDetail!!.atraque.buque.nombre)
+                    DetailFieldInspeccion("Muelle y Puerto", "Muelle ${selectedInspeccionForDetail!!.atraque.muelle.codigo} (${selectedInspeccionForDetail!!.atraque.muelle.puerto.nombre})")
+                    DetailFieldInspeccion("Resultado", selectedInspeccionForDetail!!.resultado)
+                    DetailFieldInspeccion("Fecha Inspección", formatInspectionDate(selectedInspeccionForDetail!!.fechaInspeccion))
+                    DetailFieldInspeccion("Observaciones y Notas", selectedInspeccionForDetail!!.observaciones.ifBlank { "Sin observaciones registradas." })
+                }
+            },
+            confirmButton = {
+                Button(onClick = { showDetailInspeccionDialog = false }) {
+                    Text("Cerrar")
+                }
+            }
+        )
+    }
+
+    if (showDetailAtraqueDialog && selectedAtraqueForDetail != null) {
+        AlertDialog(
+            onDismissRequest = { showDetailAtraqueDialog = false },
+            title = { Text(text = "Atraque #${selectedAtraqueForDetail!!.id}", fontWeight = FontWeight.Black, color = PrimaryBlue) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    DetailFieldInspeccion("Buque", "${selectedAtraqueForDetail!!.buque.nombre} (${selectedAtraqueForDetail!!.buque.matricula})")
+                    DetailFieldInspeccion("Muelle y Puerto", "Muelle ${selectedAtraqueForDetail!!.muelle.codigo} (${selectedAtraqueForDetail!!.muelle.puerto.nombre})")
+                    DetailFieldInspeccion("Capitán Responsable", "${selectedAtraqueForDetail!!.capitan.nombres} ${selectedAtraqueForDetail!!.capitan.apellidos}")
+                    DetailFieldInspeccion("Fecha Ingreso", formatDateTime(selectedAtraqueForDetail!!.fechaIngreso))
+                    DetailFieldInspeccion("Fecha Salida", formatDateTime(selectedAtraqueForDetail!!.fechaSalida))
+                    DetailFieldInspeccion("Estado Maniobra", selectedAtraqueForDetail!!.estado.replace("_", " ").replaceFirstChar { it.uppercase() })
+                }
+            },
+            confirmButton = {
+                Button(onClick = { showDetailAtraqueDialog = false }) {
+                    Text("Cerrar")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun DetailFieldInspeccion(label: String, value: String) {
+    Column {
+        Text(text = label.uppercase(), fontSize = 9.sp, color = TextTertiary, fontWeight = FontWeight.Bold)
+        Text(text = value, fontSize = 15.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
     }
 }
 
@@ -322,6 +386,7 @@ fun InspectionsScreen(
 fun InspeccionCardItem(
     inspeccion: InspeccionDto,
     isAdmin: Boolean,
+    onClick: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -335,7 +400,8 @@ fun InspeccionCardItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp)),
+            .clip(RoundedCornerShape(24.dp))
+            .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = BlancoHielo),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         border = BorderStroke(1.dp, Border)
@@ -476,13 +542,15 @@ fun InspeccionCardItem(
 fun AtraqueCardItem(
     atraque: AtraqueDto,
     isAdmin: Boolean,
+    onClick: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp)),
+            .clip(RoundedCornerShape(24.dp))
+            .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = BlancoHielo),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         border = BorderStroke(1.dp, Border)
@@ -510,7 +578,7 @@ fun AtraqueCardItem(
                         border = BorderStroke(1.dp, AzulAcero.copy(alpha = 0.3f))
                     ) {
                         Text(
-                            text = atraque.estado,
+                            text = atraque.estado.replace("_", " ").replaceFirstChar { it.uppercase() },
                             color = AzulAcero,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
