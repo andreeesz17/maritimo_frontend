@@ -45,6 +45,8 @@ fun CatalogScreen(
     var selectedCapitanForEdit by remember { mutableStateOf<CapitanDto?>(null) }
     var showDetailDialog by remember { mutableStateOf(false) }
     var selectedCapitanForDetail by remember { mutableStateOf<CapitanDto?>(null) }
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    var pendingDeleteId by remember { mutableStateOf<Int?>(null) }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -196,7 +198,8 @@ fun CatalogScreen(
                                     showCreateEditDialog = true
                                 },
                                 onDelete = {
-                                    viewModel.deleteCapitan(capitan.id)
+                                    pendingDeleteId = capitan.id
+                                    showDeleteConfirmDialog = true
                                 }
                             )
                         }
@@ -246,6 +249,45 @@ fun CatalogScreen(
         CapitanDetailDialog(
             capitan = selectedCapitanForDetail!!,
             onDismiss = { showDetailDialog = false }
+        )
+    }
+
+    if (showDeleteConfirmDialog && pendingDeleteId != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmDialog = false },
+            title = {
+                Text(
+                    text = "Eliminar Capitán",
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    fontSize = 20.sp
+                )
+            },
+            text = {
+                Text(
+                    text = "¿Estás seguro de que deseas eliminar este capitán? Esta acción no se puede deshacer.",
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontSize = 15.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        pendingDeleteId?.let { viewModel.deleteCapitan(it) }
+                        showDeleteConfirmDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = RojoCoral)
+                ) {
+                    Text("Eliminar", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmDialog = false }) {
+                    Text("Cancelar", color = Color.White.copy(alpha = 0.6f))
+                }
+            },
+            containerColor = Color(0xFF0C162A),
+            shape = RoundedCornerShape(24.dp)
         )
     }
 }

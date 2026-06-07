@@ -51,6 +51,9 @@ fun MyClassesScreen(
     var selectedMuelleForDetail by remember { mutableStateOf<MuelleDto?>(null) }
     var showDetailPuertoDialog by remember { mutableStateOf(false) }
     var selectedPuertoForDetail by remember { mutableStateOf<PuertoDto?>(null) }
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    var itemToDeleteType by remember { mutableStateOf("") } // "muelle" or "puerto"
+    var itemIdToDelete by remember { mutableStateOf<Int?>(null) }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -240,7 +243,9 @@ fun MyClassesScreen(
                                                 showMuelleDialog = true
                                             },
                                             onDelete = {
-                                                viewModel.deleteMuelle(muelle.id)
+                                                itemIdToDelete = muelle.id
+                                                itemToDeleteType = "muelle"
+                                                showDeleteConfirmDialog = true
                                             }
                                         )
                                     }
@@ -282,7 +287,9 @@ fun MyClassesScreen(
                                                 showPuertoDialog = true
                                             },
                                             onDelete = {
-                                                viewModel.deletePuerto(puerto.id)
+                                                itemIdToDelete = puerto.id
+                                                itemToDeleteType = "puerto"
+                                                showDeleteConfirmDialog = true
                                             }
                                         )
                                     }
@@ -386,6 +393,54 @@ fun MyClassesScreen(
                     Text("Cerrar")
                 }
             }
+        )
+    }
+
+    if (showDeleteConfirmDialog && itemIdToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmDialog = false },
+            title = {
+                Text(
+                    text = if (itemToDeleteType == "muelle") "Eliminar Muelle" else "Eliminar Puerto",
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    fontSize = 20.sp
+                )
+            },
+            text = {
+                Text(
+                    text = if (itemToDeleteType == "muelle")
+                        "¿Estás seguro de que deseas eliminar este muelle? Esta acción no se puede deshacer."
+                    else
+                        "¿Estás seguro de que deseas eliminar este puerto? Esta acción no se puede deshacer y podría afectar a los muelles asociados.",
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontSize = 15.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        itemIdToDelete?.let { id ->
+                            if (itemToDeleteType == "muelle") {
+                                viewModel.deleteMuelle(id)
+                            } else {
+                                viewModel.deletePuerto(id)
+                            }
+                        }
+                        showDeleteConfirmDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = RojoCoral)
+                ) {
+                    Text("Eliminar", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmDialog = false }) {
+                    Text("Cancelar", color = Color.White.copy(alpha = 0.6f))
+                }
+            },
+            containerColor = Color(0xFF0C162A),
+            shape = RoundedCornerShape(24.dp)
         )
     }
 }

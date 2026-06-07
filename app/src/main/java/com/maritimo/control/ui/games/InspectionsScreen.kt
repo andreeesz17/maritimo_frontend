@@ -50,6 +50,9 @@ fun InspectionsScreen(
     var selectedInspeccionForDetail by remember { mutableStateOf<InspeccionDto?>(null) }
     var showDetailAtraqueDialog by remember { mutableStateOf(false) }
     var selectedAtraqueForDetail by remember { mutableStateOf<AtraqueDto?>(null) }
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    var itemToDeleteType by remember { mutableStateOf("") } // "inspeccion" or "atraque"
+    var itemIdToDelete by remember { mutableStateOf<Int?>(null) }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -225,7 +228,9 @@ fun InspectionsScreen(
                                                 showInspeccionDialog = true
                                             },
                                             onDelete = {
-                                                viewModel.deleteInspeccion(inspeccion.id)
+                                                itemIdToDelete = inspeccion.id
+                                                itemToDeleteType = "inspeccion"
+                                                showDeleteConfirmDialog = true
                                             }
                                         )
                                     }
@@ -267,7 +272,9 @@ fun InspectionsScreen(
                                                 showAtraqueDialog = true
                                             },
                                             onDelete = {
-                                                viewModel.deleteAtraque(atraque.id)
+                                                itemIdToDelete = atraque.id
+                                                itemToDeleteType = "atraque"
+                                                showDeleteConfirmDialog = true
                                             }
                                         )
                                     }
@@ -370,6 +377,54 @@ fun InspectionsScreen(
                     Text("Cerrar")
                 }
             }
+        )
+    }
+
+    if (showDeleteConfirmDialog && itemIdToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmDialog = false },
+            title = {
+                Text(
+                    text = if (itemToDeleteType == "inspeccion") "Eliminar Inspección" else "Eliminar Atraque",
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    fontSize = 20.sp
+                )
+            },
+            text = {
+                Text(
+                    text = if (itemToDeleteType == "inspeccion")
+                        "¿Estás seguro de que deseas eliminar esta inspección? Esta acción no se puede deshacer."
+                    else
+                        "¿Estás seguro de que deseas eliminar este atraque? Esta acción no se puede deshacer.",
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontSize = 15.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        itemIdToDelete?.let { id ->
+                            if (itemToDeleteType == "inspeccion") {
+                                viewModel.deleteInspeccion(id)
+                            } else {
+                                viewModel.deleteAtraque(id)
+                            }
+                        }
+                        showDeleteConfirmDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = RojoCoral)
+                ) {
+                    Text("Eliminar", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmDialog = false }) {
+                    Text("Cancelar", color = Color.White.copy(alpha = 0.6f))
+                }
+            },
+            containerColor = Color(0xFF0C162A),
+            shape = RoundedCornerShape(24.dp)
         )
     }
 }
