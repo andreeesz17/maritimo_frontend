@@ -56,7 +56,7 @@ El sistema cuenta con 6 módulos independientes, cada uno provisto de su corresp
 * **Búsqueda Reactiva (`?search=`):** Barra de búsqueda dinámica integrada directamente con las consultas al backend de Django para filtrar registros de manera eficiente.
 * **Paginación Dinámica ("Cargar más"):** Carga incremental y bajo demanda utilizando paginación con el formato estándar de Django (`results` y control de `next`/`previous` páginas) para optimizar el consumo de recursos de red y memoria.
 * **Interceptor de Seguridad JWT (`AuthInterceptor`):** Inyección automática y segura de tokens portadores (`Authorization: Bearer <token>`) en cada petición saliente.
-* **Permisos y Roles en UI:** La interfaz oculta de forma dinámica los Floating Action Buttons (FAB), formularios y menús de creación, edición y borrado si el usuario no tiene los roles de `Admin` o `Staff` (modo de **Sólo Lectura** para operadores estándar).
+* **Permisos y Roles en UI:** Cada usuario que se registre de forma autónoma a través de la aplicación móvil solo tendrá permisos o vista de lector (Operador de Consulta), mientras que el administrador (creado por backend/staff) tendrá acceso a todo el consumo de la app (gestión completa de creación, edición y eliminación de datos en las 6 entidades). La interfaz oculta de forma dinámica los Floating Action Buttons (FAB), formularios y botones de borrado o edición a los lectores.
 
 ---
 
